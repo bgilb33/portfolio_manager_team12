@@ -1,0 +1,108 @@
+.transactions-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.title {
+    display: flex;
+    background-color: #D9D9D9;
+    height: 70px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.title h1 {
+  margin: 0;
+  padding: 0;
+}
+
+.subtitle {
+    display: flex;
+    background-color: #D9D9D9;
+    height: 30px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 14px;
+}
+.subtitle h3 {
+  margin: 0;
+  padding: 0;
+}
+
+.search-bar {
+  width: 100%;
+  margin: 0px 7px 12px 7px;
+}
+
+.search-bar input {
+  width: calc(100% - 14px);
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.price-info {
+  margin: 0px 10px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+
+.label {
+  text-align: left;
+}
+
+.value {
+  text-align: right;
+  font-weight: bold;
+}
+
+.input-fields {
+  margin: 0px 10px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quantity-input {
+    width: 100px;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+  margin: 16px 7px 20px 7px;
+}
+
+.button-row button {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button.cancel {
+  background-color: #ccc;
+  color: #333;
+}
+
+button.submit {
+  background-color: #007bff;
+  color: white;
+}
+
+
+
+
+

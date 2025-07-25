@@ -2,7 +2,7 @@
   display: grid;
   height: 100vh;
   grid-template-columns: 300px 1fr 300px;
-  grid-template-rows: 1fr 200px;
+  grid-template-rows: 1fr 250px;
   grid-template-areas:
     "holdings graphs transactions"
     "holdings market market";
@@ -13,27 +13,29 @@
   grid-area: holdings;
   background-color: #f9f9f9;
   border-right: 1px solid #ddd;
-  padding: 16px;
   overflow-y: auto;
 }
 
 .graphs {
   grid-area: graphs;
-  padding: 16px;
   background-color: #fff;
   overflow: auto;
 }
 
 .transactions {
   grid-area: transactions;
-  padding: 16px;
-  background-color: #f5f5f5;
-  border-left: 1px solid #ddd;
+  background-color: #EFEFEF;
 }
 
 .market-overview {
   grid-area: market;
-  padding: 12px;
   background-color: #ececec;
   border-top: 1px solid #ccc;
 }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+

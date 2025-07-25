@@ -1,12 +1,81 @@
-<h3>Buy / Sell</h3>
-<input placeholder="Search Ticker" />
-<input placeholder="Amount" />
-<button>Buy</button>
-<button>Sell</button>
+<div class="trasactions-container">
 
-<hr />
+    <div class="title">
+        <h1>Transactions</h1>
+    </div>
 
-<h4>Deposit / Withdraw</h4>
-<input placeholder="Amount" />
-<button>Deposit</button>
-<button>Withdraw</button>
+    <div class="subtitle">
+        <h3>Buy and Sell Securities</h3>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" placeholder="Search for a stock or bond..." />
+    </div>
+
+    <div class="price-info">
+        <div class="row">
+            <span class="label">Ask Price:</span>
+            <span class="value">$18.20</span>
+        </div>
+        <div class="row">
+            <span class="label">Bid Price:</span>
+            <span class="value">$18.60</span>
+        </div>
+    </div>
+    
+    <div class="input-fields">
+        <div class="row">
+            <span class="label">Trade Type:</span>
+            <span class="value">
+                Buy
+                <input type="radio">
+                Sell
+                <input type="radio">
+            </span>
+        </div>
+        <div class="row">
+            <span class="label">Quantity:</span>
+            <span class="value">
+                <input type="number" class="quantity-input" placeholder="Enter quantity">
+            </span>
+        </div>
+        <div class="row">
+            <span class="label">or</span>
+        </div>
+        <div class="row">
+            <span class="label">Total Investment:</span>
+            <input type="number" min="0.00" step="0.01" class="quantity-input" placeholder="Enter total">
+        </div>
+    </div>
+    <div class="button-row">
+        <button class="cancel">Cancel</button>
+        <button class="submit">Submit</button>
+    </div>
+
+    <div class="subtitle">
+        <h3>Deposit or Withdraw Cash</h3>
+    </div>
+
+    <div class="input-fields">
+        <div class="row">
+            <span class="label">Amount:</span>
+            <span class="value">
+                <input type="number" min="0.00" step="0.01" class="quantity-input" placeholder="Enter amount">
+            </span>
+        </div>
+        <div class="row">
+            <span class="label">Action Type:</span>
+            <span class="value">
+                Deposit
+                <input type="radio">
+                Withdraw
+                <input type="radio">
+            </span>
+        </div>
+    </div>
+    <div class="button-row">
+        <button class="cancel">Cancel</button>
+        <button class="submit">Submit</button>
+    </div>
+</div>
+
