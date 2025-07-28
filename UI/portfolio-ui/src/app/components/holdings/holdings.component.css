@@ -1,0 +1,27 @@
+.line-item {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+.value {
+    text-align: left;
+    min-width: 80px;
+}
+
+.holdings-container{
+    padding: 15px;
+}
+
+.sticky{
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 10; 
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #ccc;
+}
+
+.holding-items{
+    list-style-type: none;
+}
+  
