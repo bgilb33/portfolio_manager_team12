@@ -387,24 +387,26 @@ Daily Portfolio Value → Portfolio Snapshots → Historical Charts
 
 ## 📚 **API Endpoints**
 
-### **Core Portfolio**
+### **Portfolio & User**
 
-- `GET /api/portfolio` - Get complete portfolio data
-- `GET /api/holdings` - Get current holdings with market values
-- `POST /api/market/prices/refresh` - Refresh current prices
+- `GET /api/portfolio` - Get complete portfolio data, including holdings and performance.
+- `PUT /api/portfolio` - Update user profile information.
 
 ### **Transactions**
 
-- `GET /api/transactions` - Get transaction history
-- `POST /api/transactions` - Add new transaction (user input only)
-
-### **Analytics**
-
-- `GET /api/performance` - Portfolio performance metrics
-- `GET /api/allocation` - Asset allocation breakdown
-- `GET /api/portfolio/chart/{period}` - Portfolio value chart data
+- `GET /api/transactions` - Get transaction history.
+- `POST /api/transactions` - Add new transaction (user input only).
+- `GET /api/transactions/<id>` - Get a specific transaction.
 
 ### **Market Data**
 
-- `GET /api/market/search/{query}` - Search symbols for adding
-- `GET /api/market/price/{symbol}` - Get current price for symbol
+- `GET /api/market/search/<query>` - Search for stock symbols.
+- `GET /api/market/price/<symbol>` - Get the current price for a symbol.
+- `POST /api/market/prices/refresh` - Refresh prices for the user's holdings.
+
+### **Analytics**
+
+- `GET /api/performance` - Get portfolio performance metrics.
+- `GET /api/allocation` - Get asset allocation breakdown.
+- `GET /api/portfolio/chart/<period>` - Get portfolio value chart data.
+- `POST /api/portfolio/snapshot` - Store a snapshot of the current portfolio value.
