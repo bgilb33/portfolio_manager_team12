@@ -1,0 +1,25 @@
+.graph-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    "networth networth"
+    "holdings lossgain";
+  height: 100%;
+  overflow-y: hidden;
+}
+
+.networth {
+  grid-area: networth;
+  padding: 20px;
+}
+
+.holdings {
+  grid-area: holdings;
+  padding: 20px;
+}
+
+.lossgain {
+  grid-area: lossgain;
+  overflow: hidden;
+}

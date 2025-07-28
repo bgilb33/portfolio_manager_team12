@@ -21,3 +21,8 @@ export interface PortfolioData {
     cash_balance: number;
   };
 }
+
+export interface PortfolioSnapshot {
+  date: string,
+  value: number
+}
