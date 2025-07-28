@@ -3,10 +3,10 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { HoldingsComponent } from './holdings/holdings.component';
-import { GraphsComponent } from './graphs/graphs.component';
-import { TransactionsComponent } from './transactions/transactions.component';
-import { MarketOverviewComponent } from './market-overview/market-overview.component';
+import { HoldingsComponent } from './components/holdings/holdings.component';
+import { GraphsComponent } from './components/graphs/graphs.component';
+import { TransactionsComponent } from './components/transactions/transactions.component';
+import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
 
 @NgModule({
   declarations: [
