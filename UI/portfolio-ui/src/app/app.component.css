@@ -18,18 +18,18 @@
 
 .graphs {
   grid-area: graphs;
-  background-color: #fff;
+  background-color: white;
   overflow: auto;
 }
 
 .transactions {
   grid-area: transactions;
-  background-color: #EFEFEF;
+  background-color: #f9f9f9;
 }
 
 .market-overview {
   grid-area: market;
-  background-color: #ececec;
+  background-color: #f9f9f9;
   border-top: 1px solid #ccc;
 }
 
@@ -37,5 +37,8 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  overflow-y: hidden;
 }
+
+
 

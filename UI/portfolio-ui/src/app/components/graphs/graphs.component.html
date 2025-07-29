@@ -1,2 +1,29 @@
-<h3>Asset Graph</h3>
-<div style="height: 200px; background: #ddd;">[Chart Placeholder]</div>
+<div class="graph-grid">
+    <div class="networth">
+        <apx-chart
+            [series]="portfolioValueChartOptions.series"
+            [chart]="portfolioValueChartOptions.chart"
+            [title]="portfolioValueChartOptions.title"
+            [xaxis]="portfolioValueChartOptions.xaxis">
+        </apx-chart>
+    </div>
+
+    <div class="holdings">
+        <apx-chart
+            *ngIf="pieChartOptions"
+            [series]="pieChartOptions.series"
+            [chart]="pieChartOptions.chart"
+            [labels]="pieChartOptions.labels"
+            [responsive]="pieChartOptions.responsive"
+            [title]="pieChartOptions.title">
+        </apx-chart>
+    </div>
+    <div class="gainloss"> 
+        <apx-chart
+            [series]="gainLossChartOptions.series"
+            [chart]="gainLossChartOptions.chart"
+            [title]="gainLossChartOptions.title"
+            [xaxis]="gainLossChartOptions.xaxis">
+        </apx-chart>
+    </div>
+</div>
