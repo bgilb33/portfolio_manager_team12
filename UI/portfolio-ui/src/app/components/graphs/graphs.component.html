@@ -18,5 +18,12 @@
             [title]="pieChartOptions.title">
         </apx-chart>
     </div>
-    <div class="lossgain"> </div>
+    <div class="gainloss"> 
+        <apx-chart
+            [series]="gainLossChartOptions.series"
+            [chart]="gainLossChartOptions.chart"
+            [title]="gainLossChartOptions.title"
+            [xaxis]="gainLossChartOptions.xaxis">
+        </apx-chart>
+    </div>
 </div>

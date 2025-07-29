@@ -53,11 +53,11 @@ export class PortfolioService {
 
   getTimeSeriesData(): PortfolioSnapshot[] {
     let mockData = [
-      { date: '2024-01-01', value: 10000 },
-      { date: '2024-01-02', value: 10300 },
-      { date: '2024-01-03', value: 10150 },
-      { date: '2024-01-04', value: 10700 },
-      { date: '2024-01-05', value: 11000 }
+      { date: '2024-01-01', total_market_value: 10000,  total_gain_loss: 0},
+      { date: '2024-01-02', total_market_value: 10300, total_gain_loss: 300 },
+      { date: '2024-01-03', total_market_value: 10150, total_gain_loss: 150 },
+      { date: '2024-01-04', total_market_value: 10700, total_gain_loss: 700 },
+      { date: '2024-01-05', total_market_value: 11000, total_gain_loss: 1000 }
     ];
 
     return mockData;

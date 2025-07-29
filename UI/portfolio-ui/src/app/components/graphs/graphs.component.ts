@@ -32,6 +32,13 @@ export class GraphsComponent implements OnInit {
     title: {}
   };
 
+  gainLossChartOptions: LineChartOptions = {
+    series: [],
+    chart: { type: 'line' },
+    xaxis: {},
+    title: {}
+  };
+
   pieChartOptions: PieChartOptions = {
     series: [],
     chart: { type: 'pie'},
@@ -60,7 +67,7 @@ export class GraphsComponent implements OnInit {
       series: [
         {
           name: 'Portfolio Value',
-          data: this.timeSeriesData.map(d => ({ x: d.date, y: d.value }))
+          data: this.timeSeriesData.map(d => ({ x: d.date, y: d.total_market_value }))
         }
       ],
       chart: {
@@ -79,12 +86,38 @@ export class GraphsComponent implements OnInit {
       }
     };
 
+    // Setting gain loss chart options
+    this.gainLossChartOptions = {
+      series: [
+        {
+          name: 'Portfolio Value',
+          data: this.timeSeriesData.map(d => ({ x: d.date, y: d.total_gain_loss }))
+        }
+      ],
+      chart: {
+        type: 'line',
+        height: '250px',
+        width: '100%',
+        toolbar: {
+          show: false
+        }
+      },
+      title: {
+        text: 'Gain/Loss Over Time'
+      },
+      xaxis: {
+        type: 'datetime'
+      }
+    };
+
+
     if (this.portfolio) {
       this.pieChartOptions = {
         series: this.portfolio.holdings.map(h => h.market_value).concat(this.portfolio.totals.cash_balance),
         chart: {
           type: 'pie',
-          height: 320
+          height: '250px',
+          width: '100%'
         },
         labels: this.portfolio.holdings.map(h => h.symbol).concat('CASH'),
         title: {

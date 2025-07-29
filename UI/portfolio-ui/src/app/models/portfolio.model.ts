@@ -24,5 +24,6 @@ export interface PortfolioData {
 
 export interface PortfolioSnapshot {
   date: string,
-  value: number
+  total_market_value: number,
+  total_gain_loss: number
 }
