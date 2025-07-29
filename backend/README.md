@@ -18,16 +18,12 @@ app.py (Flask routes)
 
 ## 🔄 **API Endpoint Categories**
 
----
-
 ### **📈 Portfolio & User**
 
-#### `GET /api/portfolio`
-
+#### `GET /api/portfolio/<user_id>`
 Returns the user's complete portfolio, including holdings, summary totals, and performance metrics.
 
 **✅ Example Response (200 OK):**
-
 ```json
 {
   "portfolio_info": {
@@ -38,39 +34,37 @@ Returns the user's complete portfolio, including holdings, summary totals, and p
     "name": "My Portfolio"
   },
   "portfolio_summary": {
-    "total_market_value": 20150.0,
-    "total_cost_basis": 18150.0,
-    "total_gain_loss": 2000.0,
+    "total_market_value": 20150.00,
+    "total_cost_basis": 18150.00,
+    "total_gain_loss": 2000.00,
     "total_gain_loss_percent": 11.02,
-    "cash_balance": 15850.0,
+    "cash_balance": 15850.00,
     "total_positions": 3
   },
   "portfolio_performance": {
-    "total_value": 20150.0,
-    "day_change": 140.0,
-    "day_change_percent": 0.7
+    "total_value": 20150.00,
+    "day_change": 140.00,
+    "day_change_percent": 0.70
   },
   "holdings": [
     {
       "symbol": "AAPL",
       "name": "Apple Inc.",
       "quantity": 10,
-      "average_cost": 150.0,
+      "average_cost": 150.00,
       "current_price": 175.25,
-      "market_value": 1752.5,
-      "total_cost": 1500.0,
-      "gain_loss": 252.5
+      "market_value": 1752.50,
+      "total_cost": 1500.00,
+      "gain_loss": 252.50
     }
   ]
 }
 ```
 
-#### `PUT /api/portfolio`
-
+#### `PUT /api/portfolio/<user_id>`
 Updates the user's profile information.
 
 **➡️ Example Request Body:**
-
 ```json
 {
   "full_name": "Test User Updated"
@@ -78,7 +72,6 @@ Updates the user's profile information.
 ```
 
 **✅ Example Response (200 OK):**
-
 ```json
 {
   "portfolio": {
@@ -93,12 +86,10 @@ Updates the user's profile information.
 
 ### **💰 Transactions**
 
-#### `GET /api/transactions`
-
+#### `GET /api/transactions/<user_id>`
 Returns a paginated list of the user's transaction history.
 
 **✅ Example Response (200 OK):**
-
 ```json
 {
   "transactions": [
@@ -108,8 +99,8 @@ Returns a paginated list of the user's transaction history.
       "symbol": "AAPL",
       "transaction_type": "BUY",
       "quantity": 10,
-      "price": 150.0,
-      "total_amount": 1500.0,
+      "price": 150.00,
+      "total_amount": 1500.00,
       "transaction_date": "2025-07-13T12:00:00Z",
       "notes": "Bought 10 shares of Apple"
     }
@@ -117,24 +108,21 @@ Returns a paginated list of the user's transaction history.
 }
 ```
 
-#### `POST /api/transactions`
-
+#### `POST /api/transactions/<user_id>`
 Creates a new transaction and updates holdings accordingly.
 
 **➡️ Example Request Body:**
-
 ```json
 {
-  "symbol": "MSFT",
-  "transaction_type": "BUY",
-  "quantity": 10,
-  "price": 300.0,
-  "transaction_date": "2025-07-28T12:00:00Z"
+    "symbol": "MSFT",
+    "transaction_type": "BUY",
+    "quantity": 10,
+    "price": 300.00,
+    "transaction_date": "2025-07-28T12:00:00Z"
 }
 ```
 
 **✅ Example Response (201 Created):**
-
 ```json
 {
   "transaction": {
@@ -143,8 +131,8 @@ Creates a new transaction and updates holdings accordingly.
     "symbol": "MSFT",
     "transaction_type": "BUY",
     "quantity": 10,
-    "price": 300.0,
-    "total_amount": 3000.0,
+    "price": 300.00,
+    "total_amount": 3000.00,
     "transaction_date": "2025-07-28T12:00:00Z"
   }
 }
@@ -155,11 +143,9 @@ Creates a new transaction and updates holdings accordingly.
 ### **📊 Market Data**
 
 #### `GET /api/market/search/<query>`
-
 Searches for stock symbols.
 
 **✅ Example Response (200 OK) for `/api/market/search/MSFT`:**
-
 ```json
 {
   "results": [
@@ -172,17 +158,15 @@ Searches for stock symbols.
 }
 ```
 
-#### `POST /api/market/prices/refresh`
-
+#### `POST /api/market/prices/refresh/<user_id>`
 Refreshes the cached market prices for all holdings in the user's portfolio.
 
 **✅ Example Response (200 OK):**
-
 ```json
 {
-  "message": "Updated prices for 3 symbols",
-  "updated_count": 3,
-  "timestamp": "2025-07-28T14:30:00Z"
+    "message": "Updated prices for 3 symbols",
+    "updated_count": 3,
+    "timestamp": "2025-07-28T14:30:00Z"
 }
 ```
 
@@ -190,52 +174,46 @@ Refreshes the cached market prices for all holdings in the user's portfolio.
 
 ### **📈 Portfolio Analytics**
 
-#### `GET /api/performance`
-
+#### `GET /api/performance/<user_id>`
 Returns key performance indicators for the portfolio.
 
 **✅ Example Response (200 OK):**
-
 ```json
 {
   "performance": {
-    "total_value": 20150.0,
-    "total_cost": 18150.0,
-    "total_gain_loss": 2000.0,
+    "total_value": 20150.00,
+    "total_cost": 18150.00,
+    "total_gain_loss": 2000.00,
     "total_return_percent": 11.02,
-    "day_change": 140.0,
-    "day_change_percent": 0.7
+    "day_change": 140.00,
+    "day_change_percent": 0.70
   }
 }
 ```
 
-#### `GET /api/allocation`
-
+#### `GET /api/allocation/<user_id>`
 Returns the asset allocation breakdown between stocks and cash.
 
 **✅ Example Response (200 OK):**
-
 ```json
 {
   "allocation": {
     "Stocks": {
-      "value": 4300.0,
+      "value": 4300.00,
       "percentage": 21.3
     },
     "Cash": {
-      "value": 15850.0,
+      "value": 15850.00,
       "percentage": 78.7
     }
   }
 }
 ```
 
-#### `GET /api/portfolio/chart/<period>`
-
+#### `GET /api/portfolio/chart/<user_id>/<period>`
 Returns historical data points for drawing a portfolio value chart.
 
-**✅ Example Response (200 OK) for `/api/portfolio/chart/1M`:**
-
+**✅ Example Response (200 OK) for `/api/portfolio/chart/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/1M`:**
 ```json
 {
   "chart_data": [
@@ -245,11 +223,11 @@ Returns historical data points for drawing a portfolio value chart.
     },
     {
       "date": "2025-07-27",
-      "total_value": 20010.5
+      "total_value": 20010.50
     },
     {
       "date": "2025-07-28",
-      "total_value": 20150.0
+      "total_value": 20150.00
     }
   ],
   "period": "1M"
