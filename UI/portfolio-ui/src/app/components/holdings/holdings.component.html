@@ -1,0 +1,30 @@
+<div class="holdings-container">
+  <div class="sticky">
+    <p class="line-item">
+      <span class="label">Net Worth:</span>
+      <span class="value">${{ getNetWorth() | number: '1.2-2' }}</span>
+    </p>
+  
+    <p class="line-item">
+      <span class="label">Cash:</span>
+      <span class="value">${{ getCash() | number: '1.2-2' }}</span>
+    </p>
+  
+    <p class="line-item">
+      <span class="label">Stocks:</span>
+      <span class="value">${{ getTotalMarketValue() | number: '1.2-2' }}</span>
+    </p>
+  </div>
+    <div>
+      <ul class="holding-items">
+        <li *ngFor="let holding of holdings">
+          <strong>{{ holding.symbol }}</strong> - 
+          <ul class="holding-items">
+            <li>QTY: {{ holding.quantity }}</li>
+            <li>MKT VAL: ${{ getTotalInvested(holding) | number: '1.2-2' }}</li>
+          </ul>
+        </li>
+      </ul>
+  </div>
+</div>
+
