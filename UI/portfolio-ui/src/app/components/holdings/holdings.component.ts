@@ -21,8 +21,8 @@ export class HoldingsComponent {
       if (data){
         this.portfolio = data;
         this.holdings = data.holdings;
-        this.cashBalance = data.totals.cash_balance;
-        this.totalMarketValue = data.totals.total_market_value;
+        this.cashBalance = data.portfolio_summary.cash_balance;
+        this.totalMarketValue = data.portfolio_summary.total_market_value;
         console.log(data);
       }
     })

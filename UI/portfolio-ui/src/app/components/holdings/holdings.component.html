@@ -1,4 +1,4 @@
-<div class="holdings-container">
+<!-- <div class="holdings-container">
   <div class="sticky">
     <p class="line-item">
       <span class="label">Net Worth:</span>
@@ -26,5 +26,33 @@
         </li>
       </ul>
   </div>
+</div> -->
+
+<div class="holdings-container">
+  <div class="title">
+      <h1>Holdings</h1>
+  </div>
+
+  <div class="holdings-overview">
+    <div class="row">
+      <span class="label">Net Worth:</span>
+      <span class="value">${{ getNetWorth() | number: '1.2-2'}}</span>
+    </div>
+    <div class="row">
+      <span class="label">Cash:</span>
+      <span class="value">${{ getCash() | number: '1.2-2'}}</span>
+    </div>
+    <div class="row">
+      <span class="label">Stocks:</span>
+      <span class="value">${{ getTotalMarketValue() | number: '1.2-2'}}</span>
+    </div>
+  </div>
+
+  <div class="subtitle">
+    <h3>Stocks</h3>
+  </div>
+
+  
+
 </div>
 

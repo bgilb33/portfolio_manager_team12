@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PortfolioService } from '../../services/portfolio.service';
-import { PortfolioData, PortfolioSnapshot } from '../../models/portfolio.model';
+import { PortfolioData, ChartData, PortfolioSnapshot } from '../../models/portfolio.model';
 import { ApexAxisChartSeries, ApexChart, ApexXAxis, ApexTitleSubtitle, ApexNonAxisChartSeries, ApexResponsive } from 'ngx-apexcharts';
 
 export type LineChartOptions = {
@@ -47,7 +47,9 @@ export class GraphsComponent implements OnInit {
     title: {}
   }
 
+  chartData: ChartData | null = null;
   timeSeriesData: PortfolioSnapshot[] | null = null;
+
 
   portfolio: PortfolioData | null = null;
 
@@ -60,20 +62,21 @@ export class GraphsComponent implements OnInit {
     });
 
     // Getting time series data
-    this.timeSeriesData = this.portfolioService.getTimeSeriesData();
+    this.chartData = this.portfolioService.getTimeSeriesData();
+    this.timeSeriesData = this.chartData.chart_data
     
     // Setting portfolio chart options
     this.portfolioValueChartOptions = {
       series: [
         {
           name: 'Portfolio Value',
-          data: this.timeSeriesData.map(d => ({ x: d.date, y: d.total_market_value }))
+          data: this.timeSeriesData.map(d => ({ x: d.date, y: d.total_value }))
         }
       ],
       chart: {
         type: 'line',
         height: '250px',
-        width: '100%',
+        //width: '100%',
         toolbar: {
           show: false
         }
@@ -97,7 +100,7 @@ export class GraphsComponent implements OnInit {
       chart: {
         type: 'line',
         height: '250px',
-        width: '100%',
+        //width: '100%',
         toolbar: {
           show: false
         }
@@ -113,11 +116,11 @@ export class GraphsComponent implements OnInit {
 
     if (this.portfolio) {
       this.pieChartOptions = {
-        series: this.portfolio.holdings.map(h => h.market_value).concat(this.portfolio.totals.cash_balance),
+        series: this.portfolio.holdings.map(h => h.market_value).concat(this.portfolio.portfolio_summary.cash_balance),
         chart: {
           type: 'pie',
           height: '250px',
-          width: '100%'
+          //width: '100%'
         },
         labels: this.portfolio.holdings.map(h => h.symbol).concat('CASH'),
         title: {
