@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { of } from 'rxjs';
 import { HoldingsComponent } from './holdings.component';
+import { PortfolioService } from '../../services/portfolio.service';
+import { PortfolioData } from '../../models/portfolio.model';
 
 describe('HoldingsComponent', () => {
   let component: HoldingsComponent;
