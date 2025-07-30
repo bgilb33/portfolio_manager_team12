@@ -206,7 +206,7 @@ def store_portfolio_snapshot(user_id: str, portfolio_value: float, date: str = N
         return None
 
 def get_portfolio_value_history(user_id: str, days: int = 30):
-    """Get portfolio value history for charts (portfolio-focused)"""
+    """Get portfolio value history for charts with daily net change calculation"""
     try:
         client = get_supabase_client()
         cutoff_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
@@ -219,7 +219,38 @@ def get_portfolio_value_history(user_id: str, days: int = 30):
             .order('date')\
             .execute()
         
-        return response.data
+        chart_data = response.data
+        
+        # Calculate cumulative changes
+        cumulative_changes = []
+        cumulative_change = 0
+        
+        for i, data_point in enumerate(chart_data):
+            if i == 0:
+                # First day: no change (starts at 0)
+                daily_change = 0
+            else:
+                # Calculate change from previous day
+                previous_value = chart_data[i-1]['total_value']
+                current_value = data_point['total_value']
+                daily_change = current_value - previous_value
+            
+            cumulative_change += daily_change
+            
+            # Add cumulative change info to the data point
+            enhanced_data_point = {
+                **data_point,
+                'cumulative_change': cumulative_change
+            }
+            cumulative_changes.append(enhanced_data_point)
+        
+        return {
+            'chart_data': cumulative_changes,
+            'period_days': days
+        }
     except Exception as e:
         logger.error(f"Error getting portfolio value history: {e}")
-        return []
+        return {
+            'chart_data': [],
+            'period_days': days
+        }

@@ -200,7 +200,7 @@ def get_allocation(user_id):
 
 @app.route('/api/portfolio/chart/<user_id>/<period>', methods=['GET'])
 def get_portfolio_chart(user_id, period):
-    """Get portfolio value chart data for specified time period"""
+    """Get portfolio value chart data for specified time period with daily net changes"""
     try:
         # Map period to days
         period_days = {
@@ -212,10 +212,10 @@ def get_portfolio_chart(user_id, period):
         }
         
         days = period_days.get(period, 30)
-        chart_data = get_portfolio_value_history(user_id, days)
+        result = get_portfolio_value_history(user_id, days)
         
         return jsonify({
-            'chart_data': chart_data,
+            'chart_data': result['chart_data'],
             'period': period,
             'days': days
         })
