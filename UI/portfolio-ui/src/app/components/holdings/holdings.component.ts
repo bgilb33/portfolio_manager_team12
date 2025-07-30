@@ -13,6 +13,7 @@ export class HoldingsComponent {
   holdings : Holding[] = [];
   cashBalance: number = 0;
   totalMarketValue: number = 0;
+  selectedHolding: Holding | null = null;
 
   constructor(private portfolioService: PortfolioService) { }
 
@@ -23,7 +24,9 @@ export class HoldingsComponent {
         this.holdings = data.holdings;
         this.cashBalance = data.portfolio_summary.cash_balance;
         this.totalMarketValue = data.portfolio_summary.total_market_value;
-        console.log(data);
+        if (this.holdings.length > 0) {
+          this.selectedHolding = this.holdings[0];
+        }
       }
     })
   }
@@ -42,5 +45,9 @@ export class HoldingsComponent {
 
   getTotalInvested(holding: Holding): number {
     return holding.quantity * holding.average_cost;
+  }
+
+  selectStock(index: number): void {
+    this.selectedHolding = this.holdings[index];
   }
 }

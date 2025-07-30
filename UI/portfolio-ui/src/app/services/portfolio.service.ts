@@ -27,7 +27,7 @@ export class PortfolioService {
         total_gain_loss: 2000.00,
         total_gain_loss_percent: 11.02,
         cash_balance: 15850.00,
-        total_positions: 3
+        total_positions: 4
       },
       portfolio_performance: {
         total_value: 20150.00,
@@ -44,9 +44,40 @@ export class PortfolioService {
           market_value: 1752.50,
           total_cost: 1500.00,
           gain_loss: 252.50
+        },
+        {
+          symbol: "MSFT",
+          name: "Microsoft Corp.",
+          quantity: 5,
+          average_cost: 310.00,
+          current_price: 355.00,
+          market_value: 1775.00,
+          total_cost: 1550.00,
+          gain_loss: 225.00
+        },
+        {
+          symbol: "NVDA",
+          name: "NVIDIA Corp.",
+          quantity: 3,
+          average_cost: 800.00,
+          current_price: 925.00,
+          market_value: 2775.00,
+          total_cost: 2400.00,
+          gain_loss: 375.00
+        },
+        {
+          symbol: "AMZN",
+          name: "Amazon.com Inc.",
+          quantity: 6,
+          average_cost: 120.00,
+          current_price: 130.00,
+          market_value: 780.00,
+          total_cost: 720.00,
+          gain_loss: 60.00
         }
       ]
-    }
+    };
+
 
 
     this.portfolioSubject.next(mockPortfolio);

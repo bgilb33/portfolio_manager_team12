@@ -30,6 +30,7 @@
   grid-area: transactions;
   background-color: #f9f9f9;
   overflow: hidden;
+  border-left: 1px solid #ddd;
 }
 
 .market-overview {
