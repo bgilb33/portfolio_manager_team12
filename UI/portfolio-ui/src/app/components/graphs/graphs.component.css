@@ -1,7 +1,7 @@
 .graph-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 320px 320px;
+  grid-template-rows: 305px 305px;
   grid-template-areas:
     "networth networth"
     "holdings gainloss";
