@@ -1,19 +1,20 @@
 .graph-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 320px 320px;
+  grid-template-rows: 305px 305px;
   grid-template-areas:
     "networth networth"
     "holdings gainloss";
-  height: 100%;
+  height: calc(100% - 10px);
   overflow-y: hidden;
+  gap: 10px;
+  padding: 15px;
 
 }
 
 .networth {
   grid-area: networth;
   padding: 20px;
-  margin: 15px 15px 8px 15px;
   background-color: #f9f9f9;
   border-radius: 10px;
 }
@@ -21,7 +22,6 @@
 .holdings {
   grid-area: holdings;
   padding: 20px;
-  margin: 7px 7px 15px 15px;
   background-color: #f9f9f9;
   border-radius: 10px;
 }
@@ -29,8 +29,13 @@
 .gainloss {
   grid-area: gainloss;
   padding: 20px;
-  margin: 7px 15px 15px 8px;
   background-color: #f9f9f9;
   border-radius: 10px;
+}
+
+apx-chart {
+  max-width: 100%;
+  overflow: hidden;
+  display: block;
 }
 

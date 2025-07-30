@@ -1,27 +1,81 @@
-.line-item {
+.holdings-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.title {
     display: flex;
-    justify-content: space-between;
-  }
-  
+    background-color: #D9D9D9;
+    height: 70px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.title h1 {
+  margin: 0;
+  padding: 0;
+}
+
+.subtitle {
+    display: flex;
+    background-color: #D9D9D9;
+    height: 30px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 14px;
+}
+.subtitle h3 {
+  margin: 0;
+  padding: 0;
+}
+
+.holdings-overview {
+  margin: 0px 10px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+
+.label {
+  text-align: left;
+  font-weight: bold;
+}
+
 .value {
-    text-align: left;
-    min-width: 80px;
+  text-align: right;
+  font-weight: bold;
 }
 
-.holdings-container{
-    padding: 15px;
+.stocks {
+  overflow-y: auto;
 }
 
-.sticky{
-    position: sticky;
-    top: 0;
-    background-color: white;
-    z-index: 10; 
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #ccc;
+.stock-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-bottom: 1px solid #ddd;
+  padding: 7px 10px 7px 10px;
+  cursor: pointer;
 }
 
-.holding-items{
-    list-style-type: none;
+.stock-row:hover {
+  background-color: #f5f5f5;
 }
-  
+
+
+.highlighted {
+  background-color: #e6f0ff;
+}
+
+
+.bottom-element {
+  margin-top: auto;
+  height: 250px;
+}
