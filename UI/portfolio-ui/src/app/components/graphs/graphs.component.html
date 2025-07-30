@@ -1,29 +1,31 @@
-<div class="graph-grid">
-    <div class="networth">
-        <apx-chart
-            [series]="portfolioValueChartOptions.series"
-            [chart]="portfolioValueChartOptions.chart"
-            [title]="portfolioValueChartOptions.title"
-            [xaxis]="portfolioValueChartOptions.xaxis">
-        </apx-chart>
-    </div>
+<div class="grid grid-cols-2 grid-rows-[305px_305px] gap-3 p-4 h-[calc(100%-10px)]">
 
-    <div class="holdings">
-        <apx-chart
-            *ngIf="pieChartOptions"
-            [series]="pieChartOptions.series"
-            [chart]="pieChartOptions.chart"
-            [labels]="pieChartOptions.labels"
-            [responsive]="pieChartOptions.responsive"
-            [title]="pieChartOptions.title">
-        </apx-chart>
-    </div>
-    <div class="gainloss"> 
-        <apx-chart
-            [series]="gainLossChartOptions.series"
-            [chart]="gainLossChartOptions.chart"
-            [title]="gainLossChartOptions.title"
-            [xaxis]="gainLossChartOptions.xaxis">
-        </apx-chart>
-    </div>
+  <div class="col-span-2 bg-white rounded-lg shadow-md p-4">
+    <apx-chart
+      [series]="portfolioValueChartOptions.series"
+      [chart]="portfolioValueChartOptions.chart"
+      [title]="portfolioValueChartOptions.title"
+      [xaxis]="portfolioValueChartOptions.xaxis">
+    </apx-chart>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md p-4">
+    <apx-chart
+      *ngIf="pieChartOptions"
+      [series]="pieChartOptions.series"
+      [chart]="pieChartOptions.chart"
+      [labels]="pieChartOptions.labels"
+      [responsive]="pieChartOptions.responsive"
+      [title]="pieChartOptions.title">
+    </apx-chart>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md p-4">
+    <apx-chart
+      [series]="gainLossChartOptions.series"
+      [chart]="gainLossChartOptions.chart"
+      [title]="gainLossChartOptions.title"
+      [xaxis]="gainLossChartOptions.xaxis">
+    </apx-chart>
+  </div>
 </div>

@@ -1,70 +1,78 @@
-<div class="holdings-container">
-  <div class="title">
-      <h1>Holdings</h1>
+<div class="flex flex-col h-full p-4 bg-gray-100">
+  <div class="flex items-center justify-center h-16 mb-4 bg-gray-300 rounded">
+    <h1 class="text-xl font-semibold text-gray-800">Holdings</h1>
   </div>
 
-  <div class="holdings-overview">
-    <div class="row">
-      <span class="label">Net Worth:</span>
-      <span class="value">${{ getNetWorth() | number: '1.2-2'}}</span>
+  <div class="flex flex-col gap-2 px-2 mb-4">
+    <div class="flex justify-between font-semibold text-gray-700">
+      <span>Net Worth:</span>
+      <span>${{ getNetWorth() | number: '1.2-2' }}</span>
     </div>
-    <div class="row">
-      <span class="label">Cash:</span>
-      <span class="value">${{ getCash() | number: '1.2-2'}}</span>
+    <div class="flex justify-between font-semibold text-gray-700">
+      <span>Cash:</span>
+      <span>${{ getCash() | number: '1.2-2' }}</span>
     </div>
-    <div class="row">
-      <span class="label">Stocks:</span>
-      <span class="value">${{ getTotalMarketValue() | number: '1.2-2'}}</span>
-    </div>
-  </div>
-
-  <div class="subtitle"> 
-    <h3>Stocks</h3>
-  </div>
-
-  <div class="stocks">
-    <div class="stock-row" *ngFor="let h of holdings; let i = index" [ngClass]="{ 'highlighted': selectedHolding?.symbol === h.symbol }" (click)="selectStock(i)">
-      <div class="label">{{h.symbol}}</div>
-      <div class="value">${{h.average_cost*h.quantity}}</div>
+    <div class="flex justify-between font-semibold text-gray-700">
+      <span>Stocks:</span>
+      <span>${{ getTotalMarketValue() | number: '1.2-2' }}</span>
     </div>
   </div>
 
-  <div class="bottom-element">
-    <div class="subtitle" *ngIf="selectedHolding"> 
-       <h3>{{selectedHolding.name}}</h3>
-    </div>
-    <div class="holdings-overview" *ngIf="selectedHolding != null">
+  <div class="flex items-center justify-center h-8 mb-2 bg-gray-300 rounded">
+    <h3 class="text-sm font-medium text-gray-800">Stocks</h3>
+  </div>
 
-      <div class="row">
-        <div class="label">Symbol:</div>
-        <div class="value">{{selectedHolding.symbol}}</div>
-      </div>
-      <div class="row">
-        <div class="label">Quantity:</div>
-        <div class="value">{{selectedHolding.quantity}}</div>
-      </div>
-      <div class="row">
-        <div class="label">Average Cost:</div>
-        <div class="value">{{selectedHolding.average_cost}}</div>
-      </div>
-      <div class="row">
-        <div class="label">Current Price:</div>
-        <div class="value">{{selectedHolding.current_price}}</div>
-      </div>
-      <div class="row">
-        <div class="label">Market Value:</div>
-        <div class="value">{{selectedHolding.market_value}}</div>
-      </div>
-      <div class="row">
-        <div class="label">Total Cost:</div>
-        <div class="value">{{selectedHolding.total_cost}}</div>
-      </div>
-      <div class="row">
-        <div class="label">Gain Loss:</div>
-        <div class="value">{{selectedHolding.gain_loss}}</div>
-      </div>
+  <div class="flex flex-col overflow-y-auto mb-4">
+    <div
+      *ngFor="let h of holdings; let i = index"
+      (click)="selectStock(i)"
+      [ngClass]="{
+        'bg-blue-100': selectedHolding?.symbol === h.symbol,
+        'hover:bg-gray-200': true
+      }"
+      class="flex justify-between px-3 py-2 border-b border-gray-300 cursor-pointer"
+    >
+      <div class="font-medium text-gray-700">{{ h.symbol }}</div>
+      <div class="font-semibold text-gray-800">${{ h.average_cost * h.quantity }}</div>
     </div>
   </div>
 
+  <div class="mt-auto h-[250px]">
+    <div *ngIf="selectedHolding">
+      <div class="flex items-center justify-center h-8 mb-2 bg-gray-300 rounded">
+        <h3 class="text-sm font-medium text-gray-800">{{ selectedHolding.name }}</h3>
+      </div>
+
+      <div class="flex flex-col gap-1 px-2">
+        <div class="flex justify-between">
+          <div class="font-medium text-gray-600">Symbol:</div>
+          <div class="font-semibold text-gray-800">{{ selectedHolding.symbol }}</div>
+        </div>
+        <div class="flex justify-between">
+          <div class="font-medium text-gray-600">Quantity:</div>
+          <div class="font-semibold text-gray-800">{{ selectedHolding.quantity }}</div>
+        </div>
+        <div class="flex justify-between">
+          <div class="font-medium text-gray-600">Average Cost:</div>
+          <div class="font-semibold text-gray-800">${{ selectedHolding.average_cost }}</div>
+        </div>
+        <div class="flex justify-between">
+          <div class="font-medium text-gray-600">Current Price:</div>
+          <div class="font-semibold text-gray-800">${{ selectedHolding.current_price }}</div>
+        </div>
+        <div class="flex justify-between">
+          <div class="font-medium text-gray-600">Market Value:</div>
+          <div class="font-semibold text-gray-800">${{ selectedHolding.market_value }}</div>
+        </div>
+        <div class="flex justify-between">
+          <div class="font-medium text-gray-600">Total Cost:</div>
+          <div class="font-semibold text-gray-800">${{ selectedHolding.total_cost }}</div>
+        </div>
+        <div class="flex justify-between">
+          <div class="font-medium text-gray-600">Gain Loss:</div>
+          <div class="font-semibold text-gray-800">${{ selectedHolding.gain_loss }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
