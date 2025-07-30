@@ -6,7 +6,9 @@ import logging
 from functools import wraps
 from dotenv import load_dotenv
 
-from services.auth_service import verify_user_token
+from services.auth_service import (
+    verify_user_token, sign_up_user, sign_in_user
+)
 from services.portfolio_service import (
     get_user_portfolio, get_portfolio_details, 
     update_portfolio, get_portfolio_summary
@@ -63,6 +65,35 @@ def internal_error(error):
 @app.errorhandler(ValueError)
 def validation_error(error):
     return jsonify({'error': str(error)}), 400
+
+
+# AUTHENTICATION ENDPOINTS
+
+@app.route('/api/auth/signup', methods=['POST'])
+def signup():
+    try:
+        data = request.get_json()
+        if not data or 'email' not in data or 'password' not in data:
+            return jsonify({'error': 'Email and password required'}), 400
+        
+        auth_response = sign_up_user(data['email'], data['password'])
+        return jsonify(auth_response.user), 201
+    except Exception as e:
+        logger.error(f"Sign up error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/auth/signin', methods=['POST'])
+def signin():
+    try:
+        data = request.get_json()
+        if not data or 'email' not in data or 'password' not in data:
+            return jsonify({'error': 'Email and password required'}), 400
+        
+        auth_response = sign_in_user(data['email'], data['password'])
+        return jsonify(auth_response), 200
+    except Exception as e:
+        logger.error(f"Sign in error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 
 # PORTFOLIO ENDPOINTS
@@ -255,4 +286,4 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=port,
         debug=debug
-    ) 
+    )

@@ -1,17 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { PortfolioService } from './services/portfolio.service';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit{
+export class AppComponent {
   title = 'portfolio-ui';
-
-  constructor(private portfolioService: PortfolioService) {}
-
-  ngOnInit(): void {
-      this.portfolioService.fetchPortfolio();
-  }
 }

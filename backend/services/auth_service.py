@@ -35,4 +35,25 @@ def create_user_profile(user_id: str, full_name: str = None): #Create user profi
         return response.data[0] if response.data else None
     except Exception as e:
         logger.error(f"Error creating user profile: {e}")
-        return None 
+        return None
+
+def sign_up_user(email, password):
+    try:
+        client = get_supabase_client()
+        auth_response = client.auth.sign_up({"email": email, "password": password})
+        if auth_response.user:
+            user_id = auth_response.user.id
+            create_user_profile(user_id, full_name=email)
+        return auth_response
+    except Exception as e:
+        logger.error(f"Sign up failed: {e}")
+        raise e
+
+def sign_in_user(email, password):
+    try:
+        client = get_supabase_client()
+        auth_response = client.auth.sign_in_with_password({"email": email, "password": password})
+        return auth_response
+    except Exception as e:
+        logger.error(f"Sign in failed: {e}")
+        raise e

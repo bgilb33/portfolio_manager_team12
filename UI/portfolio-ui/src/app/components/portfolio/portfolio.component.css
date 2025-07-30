@@ -1,0 +1,41 @@
+.dashboard-grid {
+  display: grid;
+  height: 100vh;
+  grid-template-columns: 300px 1fr 300px;
+  grid-template-rows: 1fr 250px;
+  grid-template-areas:
+    "holdings graphs transactions"
+    "holdings market market";
+}
+
+/* Grid Area Styling */
+.holdings {
+  grid-area: holdings;
+  background-color: #f9f9f9;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+}
+
+.graphs {
+  grid-area: graphs;
+  background-color: white;
+  overflow: auto;
+}
+
+.transactions {
+  grid-area: transactions;
+  background-color: #f9f9f9;
+}
+
+.market-overview {
+  grid-area: market;
+  background-color: #f9f9f9;
+  border-top: 1px solid #ccc;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-y: hidden;
+}
