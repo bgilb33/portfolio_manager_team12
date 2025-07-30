@@ -28,6 +28,7 @@ export class HoldingsComponent {
           this.selectedHolding = this.holdings[0];
         }
       }
+      console.log(this.portfolio);
     })
   }
 

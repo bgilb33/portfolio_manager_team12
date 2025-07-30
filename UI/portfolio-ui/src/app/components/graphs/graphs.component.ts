@@ -58,63 +58,9 @@ export class GraphsComponent implements OnInit {
   ngOnInit(): void {
     // Getting portfolio data
     this.portfolioService.portfolio$.subscribe(data => {
+      if (!data) return;
       this.portfolio = data;
-    });
 
-    // Getting time series data
-    this.chartData = this.portfolioService.getTimeSeriesData();
-    this.timeSeriesData = this.chartData.chart_data
-    
-    // Setting portfolio chart options
-    this.portfolioValueChartOptions = {
-      series: [
-        {
-          name: 'Portfolio Value',
-          data: this.timeSeriesData.map(d => ({ x: d.date, y: d.total_value }))
-        }
-      ],
-      chart: {
-        type: 'line',
-        height: '250px',
-        //width: '100%',
-        toolbar: {
-          show: false
-        }
-      },
-      title: {
-        text: 'Portfolio Value Over Time'
-      },
-      xaxis: {
-        type: 'datetime'
-      }
-    };
-
-    // Setting gain loss chart options
-    this.gainLossChartOptions = {
-      series: [
-        {
-          name: 'Portfolio Value',
-          data: this.timeSeriesData.map(d => ({ x: d.date, y: d.total_gain_loss }))
-        }
-      ],
-      chart: {
-        type: 'line',
-        height: '250px',
-        //width: '100%',
-        toolbar: {
-          show: false
-        }
-      },
-      title: {
-        text: 'Gain/Loss Over Time'
-      },
-      xaxis: {
-        type: 'datetime'
-      }
-    };
-
-
-    if (this.portfolio) {
       this.pieChartOptions = {
         series: this.portfolio.holdings.map(h => h.market_value).concat(this.portfolio.portfolio_summary.cash_balance),
         chart: {
@@ -136,8 +82,64 @@ export class GraphsComponent implements OnInit {
           }
         ]
       };
-    }
+    });
 
+    // Getting time series data
+    this.portfolioService.getTimeSeriesData().subscribe(data => {
+      this.chartData = data;
+      this.timeSeriesData = data.chart_data;
+      const dates = this.timeSeriesData.map(d =>
+        new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      );
+
+      this.portfolioValueChartOptions = {
+        series: [
+          {
+            name: 'Portfolio Value',
+            data: this.timeSeriesData.map(d => ({ x: d.date, y: d.total_value }))
+          }
+        ],
+        chart: {
+          type: 'line',
+          height: '250px',
+          //width: '100%',
+          toolbar: {
+            show: false
+          }
+        },
+        title: {
+          text: 'Portfolio Value Over Time'
+        },
+        xaxis: {
+          categories: dates
+        }
+      };
+
+      // Setting gain loss chart options
+      this.gainLossChartOptions = {
+        series: [
+          {
+            name: 'Cumulative Change',
+            data: this.timeSeriesData.map(d => ({ x: d.date, y: d.cumulative_change }))
+          }
+        ],
+        chart: {
+          type: 'line',
+          height: '250px',
+          //width: '100%',
+          toolbar: {
+            show: false
+          }
+        },
+        title: {
+          text: 'Gain/Loss Over Time'
+        },
+        xaxis: {
+          categories: dates
+        }
+      };
+
+    });
   };
 
 }

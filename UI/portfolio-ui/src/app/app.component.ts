@@ -12,6 +12,6 @@ export class AppComponent implements OnInit{
   constructor(private portfolioService: PortfolioService) {}
 
   ngOnInit(): void {
-      this.portfolioService.fetchPortfolio();
+      this.portfolioService.getPortfolio();
   }
 }

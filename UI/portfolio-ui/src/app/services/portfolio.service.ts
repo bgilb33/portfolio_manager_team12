@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { PortfolioData, ChartData } from '../models/portfolio.model';
+import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse } from '../models/portfolio.model';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -8,99 +9,42 @@ import { PortfolioData, ChartData } from '../models/portfolio.model';
 export class PortfolioService {
   private portfolioSubject = new BehaviorSubject<PortfolioData | null>(null);
   portfolio$ = this.portfolioSubject.asObservable();
+  host: String = "http://localhost:2000/api";
+  userID: String = "75e44b0b-bb72-4e18-bb79-830fd6bfcdca";
 
-  constructor() { 
+  constructor(private http: HttpClient) { 
   }
 
-  fetchPortfolio(): void {
-    const mockPortfolio: PortfolioData = {
-      portfolio_info: {
-        id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-        full_name: "Test User",
-        created_at: new Date("2025-07-28"),
-        portfolio_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-        name: "My Portfolio"
-      },
-      portfolio_summary: {
-        total_market_value: 20150.00,
-        total_cost_basis: 18150.00,
-        total_gain_loss: 2000.00,
-        total_gain_loss_percent: 11.02,
-        cash_balance: 15850.00,
-        total_positions: 4
-      },
-      portfolio_performance: {
-        total_value: 20150.00,
-        day_change: 140.00,
-        day_change_percent: 0.70
-      },
-      holdings: [
-        {
-          symbol: "AAPL",
-          name: "Apple Inc.",
-          quantity: 10,
-          average_cost: 150.00,
-          current_price: 175.25,
-          market_value: 1752.50,
-          total_cost: 1500.00,
-          gain_loss: 252.50
-        },
-        {
-          symbol: "MSFT",
-          name: "Microsoft Corp.",
-          quantity: 5,
-          average_cost: 310.00,
-          current_price: 355.00,
-          market_value: 1775.00,
-          total_cost: 1550.00,
-          gain_loss: 225.00
-        },
-        {
-          symbol: "NVDA",
-          name: "NVIDIA Corp.",
-          quantity: 3,
-          average_cost: 800.00,
-          current_price: 925.00,
-          market_value: 2775.00,
-          total_cost: 2400.00,
-          gain_loss: 375.00
-        },
-        {
-          symbol: "AMZN",
-          name: "Amazon.com Inc.",
-          quantity: 6,
-          average_cost: 120.00,
-          current_price: 130.00,
-          market_value: 780.00,
-          total_cost: 720.00,
-          gain_loss: 60.00
-        }
-      ]
-    };
+  httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json'
+    })
+  };
 
-
-
-    this.portfolioSubject.next(mockPortfolio);
-
-    //return of(mockPortfolio); // Don't need to do this, it just returns it as an observable but can maybe use it for error checking later
+  getPortfolio(): void {
+    this.http.get<PortfolioData>(`${this.host}/portfolio/${this.userID}`, this.httpOptions)
+      .subscribe((portfolio: PortfolioData) => {
+        this.portfolioSubject.next(portfolio);
+    });
   }
 
-  getTimeSeriesData(): ChartData {
-    let mockData = [
-      { date: '2024-01-01', total_value: 10000,  total_gain_loss: 0},
-      { date: '2024-01-02', total_value: 10300, total_gain_loss: 300 },
-      { date: '2024-01-03', total_value: 10150, total_gain_loss: 150 },
-      { date: '2024-01-04', total_value: 10700, total_gain_loss: 700 },
-      { date: '2024-01-05', total_value: 11000, total_gain_loss: 1000 }
-    ];
-
-    let chart = {
-      chart_data: mockData,
-      period: "6M"
-    }
-
-    return chart;
-
+  // Set as a year for now, will make it changeable via UI later on
+  getTimeSeriesData(): Observable<ChartData> {
+    return this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/1Y`, this.httpOptions);
   }
+
+  getUserTransactions(): Observable<Transaction[]> {
+    return this.http.get<Transaction[]>(`${this.host}/transactions/${this.userID}`, this.httpOptions);
+  }
+
+  getStockPrice(ticker: string): Observable<PriceDataResponse> {
+    return this.http.get<PriceDataResponse>(`${this.host}/market/price/${ticker}`);
+  }
+
+  createTransaction(transaction: TransactionRequest): Observable<TransactionResponse> {
+    return this.http.post<TransactionResponse>(`${this.host}/transactions/${this.userID}`, transaction, this.httpOptions);
+  }
+
+
 
 }

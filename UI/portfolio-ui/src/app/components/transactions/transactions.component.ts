@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PortfolioService } from '../../services/portfolio.service';
-import { PortfolioData } from '../../models/portfolio.model';
+import { PortfolioData, PriceData } from '../../models/portfolio.model';
 
 @Component({
   selector: 'app-transactions',
@@ -10,6 +10,9 @@ import { PortfolioData } from '../../models/portfolio.model';
 export class TransactionsComponent implements OnInit {
 
   portfolio: PortfolioData | null = null;
+  current_stock: PriceData | null = null;
+  searchQuery: string = '';
+
 
   constructor(private portfolioService: PortfolioService) { }
 
@@ -17,6 +20,13 @@ export class TransactionsComponent implements OnInit {
     this.portfolioService.portfolio$.subscribe(data => {
       this.portfolio = data;
       console.log(data);
+    })
+  }
+
+  searchStock(): void {
+    this.portfolioService.getStockPrice(this.searchQuery).subscribe(data => {
+      console.log(data);
+      this.current_stock = data.price_data;
     })
   }
 

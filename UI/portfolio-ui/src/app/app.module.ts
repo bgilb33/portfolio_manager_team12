@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgxApexchartsModule } from 'ngx-apexcharts';
+import { HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -20,7 +22,9 @@ import { MarketOverviewComponent } from './components/market-overview/market-ove
   imports: [
     BrowserModule,
     AppRoutingModule,
-    NgxApexchartsModule
+    NgxApexchartsModule,
+    HttpClientModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

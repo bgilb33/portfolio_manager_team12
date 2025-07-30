@@ -55,6 +55,25 @@ export interface Transaction {
   notes: string
 }
 
+export interface TransactionRequest {
+  symbol: string,
+  transaction_type: string,
+  quantity: number,
+  price: number,
+  transaction_date: Date
+}
+
+export interface TransactionResponse {
+  id: string,
+  user_id: string,
+  symbol: string,
+  transaction_type: string,
+  quantity: number,
+  price: number,
+  total_amount: number,
+  transaction_date: Date
+}
+
 // Portfolio Analytics
 
 export interface Performance {
@@ -68,10 +87,24 @@ export interface Performance {
 export interface PortfolioSnapshot {
   date: string,
   total_value: number,
-  total_gain_loss: number
+  cumulative_change: number
 }
 
 export interface ChartData {
   chart_data: PortfolioSnapshot[],
   period: string 
+}
+// Market Data
+
+export interface PriceData {
+  current_price: number,
+  day_change: number,
+  day_change_percent: number,
+  last_updated: Date,
+  previous_close: number,
+  symbol: string
+}
+
+export interface PriceDataResponse {
+  price_data: PriceData
 }
