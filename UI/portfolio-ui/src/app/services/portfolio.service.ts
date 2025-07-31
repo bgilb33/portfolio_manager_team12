@@ -37,6 +37,7 @@ export class PortfolioService {
   getTimeSeriesData(): void {
     this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/1Y`, this.httpOptions)
     .subscribe((chartData: ChartData) => {
+      console.log("CHART", chartData)
       this.timeSerisSubject.next(chartData);
     });
   }

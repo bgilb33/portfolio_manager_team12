@@ -87,7 +87,7 @@ export class GraphsComponent implements OnInit {
     this.portfolioService.timeSeries$.subscribe(data => {
       if (data?.chart_data) {
         this.chartData = data;
-        this.timeSeriesData = data?.chart_data;
+        this.timeSeriesData = data?.chart_data.chart_data;
 
         //Setting graphs
         const dates = this.timeSeriesData.map(d =>

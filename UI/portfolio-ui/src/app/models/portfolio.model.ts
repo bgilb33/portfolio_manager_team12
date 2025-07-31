@@ -104,7 +104,11 @@ export interface PortfolioSnapshot {
 }
 
 export interface ChartData {
-  chart_data: PortfolioSnapshot[],
+  chart_data: {
+    chart_data: PortfolioSnapshot[],
+    period_days: number
+  },
+  days: number,
   period: string 
 }
 // Market Data
