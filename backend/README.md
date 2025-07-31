@@ -230,9 +230,9 @@ Returns a paginated list of the user's transaction history.
 
 #### `POST /api/transactions/<user_id>`
 
-Creates a new transaction and updates holdings accordingly.
+Creates a new transaction and updates holdings accordingly. Supports BUY, SELL, DEPOSIT, and WITHDRAWAL transaction types.
 
-**➡️ Example Request Body:**
+**➡️ Example Request Body for Stock Transaction:**
 
 ```json
 {
@@ -244,6 +244,28 @@ Creates a new transaction and updates holdings accordingly.
 }
 ```
 
+**➡️ Example Request Body for Cash Deposit:**
+
+```json
+{
+  "transaction_type": "DEPOSIT",
+  "amount": 5000.0,
+  "transaction_date": "2025-07-28T12:00:00Z",
+  "notes": "Initial deposit"
+}
+```
+
+**➡️ Example Request Body for Cash Withdrawal:**
+
+```json
+{
+  "transaction_type": "WITHDRAWAL",
+  "amount": 1000.0,
+  "transaction_date": "2025-07-28T12:00:00Z",
+  "notes": "Emergency withdrawal"
+}
+```
+
 **✅ Example Response (201 Created):**
 
 ```json
@@ -251,12 +273,13 @@ Creates a new transaction and updates holdings accordingly.
   "transaction": {
     "id": "c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
     "user_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-    "symbol": "MSFT",
-    "transaction_type": "BUY",
-    "quantity": 10,
-    "price": 300.0,
-    "total_amount": 3000.0,
-    "transaction_date": "2025-07-28T12:00:00Z"
+    "symbol": "CASH",
+    "transaction_type": "DEPOSIT",
+    "quantity": 5000.0,
+    "price": 1.0,
+    "total_amount": 5000.0,
+    "transaction_date": "2025-07-28T12:00:00Z",
+    "notes": "Initial deposit"
   }
 }
 ```
