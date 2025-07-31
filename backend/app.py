@@ -6,7 +6,9 @@ import logging
 from functools import wraps
 from dotenv import load_dotenv
 
-from services.auth_service import verify_user_token
+from services.auth_service import (
+    verify_user_token
+)
 from services.portfolio_service import (
     get_user_portfolio, get_portfolio_details, 
     update_portfolio, get_portfolio_summary
@@ -18,12 +20,14 @@ from services.transaction_service import (
 )
 from services.market_service import (
     search_symbols, get_current_price, refresh_all_prices,
-    get_market_status, store_portfolio_snapshot, get_portfolio_value_history,
-    get_analyst_recommendations
+    get_market_status, store_portfolio_snapshot, get_portfolio_value_history
 )
 from services.analytics_service import (
     calculate_portfolio_performance, calculate_asset_allocation,
     get_portfolio_summary, calculate_historical_performance,
+)
+from services.watchlist_service import (
+    get_watchlist, add_to_watchlist, remove_from_watchlist
 )
 
 from utils.database import init_database
@@ -64,6 +68,69 @@ def internal_error(error):
 @app.errorhandler(ValueError)
 def validation_error(error):
     return jsonify({'error': str(error)}), 400
+
+
+# AUTHENTICATION ENDPOINTS
+
+@app.route('/api/auth/signup', methods=['POST'])
+def signup():
+    try:
+        data = request.get_json()
+        if not data or 'email' not in data or 'password' not in data:
+            return jsonify({'error': 'Email and password required'}), 400
+        
+        auth_response = sign_up_user(data['email'], data['password'])
+        return jsonify(auth_response.user), 201
+    except Exception as e:
+        logger.error(f"Sign up error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/auth/signin', methods=['POST'])
+def signin():
+    try:
+        data = request.get_json()
+        if not data or 'email' not in data or 'password' not in data:
+            return jsonify({'error': 'Email and password required'}), 400
+        
+        auth_response = sign_in_user(data['email'], data['password'])
+        return jsonify(auth_response), 200
+    except Exception as e:
+        logger.error(f"Sign in error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+# WATCHLIST ENDPOINTS
+
+@app.route('/api/watchlist/<user_id>', methods=['GET'])
+def get_watchlist_route(user_id):
+    try:
+        watchlist = get_watchlist(user_id)
+        return jsonify({'watchlist': watchlist})
+    except Exception as e:
+        logger.error(f"Error in get_watchlist: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/watchlist/<user_id>', methods=['POST'])
+def add_to_watchlist_route(user_id):
+    try:
+        data = request.get_json()
+        if not data or 'symbol' not in data:
+            return jsonify({'error': 'Symbol required'}), 400
+        
+        result = add_to_watchlist(user_id, data['symbol'])
+        return jsonify(result), 201
+    except Exception as e:
+        logger.error(f"Error in add_to_watchlist: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/watchlist/<user_id>/<symbol>', methods=['DELETE'])
+def remove_from_watchlist_route(user_id, symbol):
+    try:
+        result = remove_from_watchlist(user_id, symbol)
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error in remove_from_watchlist: {e}")
+        return jsonify({'error': str(e)}), 500
 
 
 # PORTFOLIO ENDPOINTS
@@ -162,19 +229,6 @@ def get_symbol_price(symbol):
         logger.error(f"Error in get_symbol_price: {e}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/market/recommendations/<symbol>', methods=['GET'])
-def get_symbol_recommendations(symbol):
-    """Get analyst recommendations for a symbol"""
-    try:
-        recommendations = get_analyst_recommendations(symbol)
-        if recommendations:
-            return jsonify({'recommendations': recommendations})
-        else:
-            return jsonify({'error': 'Failed to get recommendations'}), 500
-    except Exception as e:
-        logger.error(f"Error in get_symbol_recommendations: {e}")
-        return jsonify({'error': str(e)}), 500
-
 @app.route('/api/market/prices/refresh/<user_id>', methods=['POST'])
 def refresh_portfolio_prices(user_id):
     """Refresh current prices for user's portfolio (yfinance calls)"""
@@ -214,7 +268,7 @@ def get_allocation(user_id):
 
 @app.route('/api/portfolio/chart/<user_id>/<period>', methods=['GET'])
 def get_portfolio_chart(user_id, period):
-    """Get portfolio value chart data for specified time period with daily net changes"""
+    """Get portfolio value chart data for specified time period"""
     try:
         # Map period to days
         period_days = {
@@ -226,10 +280,10 @@ def get_portfolio_chart(user_id, period):
         }
         
         days = period_days.get(period, 30)
-        result = get_portfolio_value_history(user_id, days)
+        chart_data = get_portfolio_value_history(user_id, days)
         
         return jsonify({
-            'chart_data': result['chart_data'],
+            'chart_data': chart_data,
             'period': period,
             'days': days
         })
@@ -269,4 +323,4 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=port,
         debug=debug
-    ) 
+    )
