@@ -21,8 +21,10 @@ export class HoldingsComponent {
     this.portfolioService.portfolio$.subscribe(data => {
       if (data){
         this.portfolio = data;
-        // Filter out holdings with zero quantity
-        this.holdings = data.holdings.filter(holding => holding.quantity > 0);
+        // Filter out holdings with zero quantity and cash holdings
+        this.holdings = data.holdings.filter(holding => 
+          holding.quantity > 0 && holding.symbol !== 'CASH'
+        );
         this.cashBalance = data.portfolio_summary.cash_balance;
         this.totalMarketValue = data.portfolio_summary.total_market_value;
         if (this.holdings.length > 0) {
