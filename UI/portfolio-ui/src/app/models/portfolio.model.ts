@@ -120,8 +120,10 @@ export interface PriceData {
   last_updated: Date,
   previous_close: number,
   symbol: string
+  name?: string;
 }
 
 export interface PriceDataResponse {
   price_data: PriceData
 }
+
