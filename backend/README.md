@@ -130,6 +130,78 @@ Updates the user's profile information.
 
 ---
 
+### **👀 Watchlist**
+
+#### `GET /api/watchlist/<user_id>`
+
+Returns the user's watchlist with detailed stock information including analyst recommendations.
+
+**✅ Example Response (200 OK):**
+
+```json
+{
+  "watchlist": [
+    {
+      "symbol": "AAPL",
+      "name": "Apple Inc.",
+      "open": 175.25,
+      "high": 177.5,
+      "low": 174.8,
+      "previousClose": 174.5,
+      "marketCap": 2750000000000,
+      "fiftyTwoWeekHigh": 198.23,
+      "fiftyTwoWeekLow": 124.17,
+      "recommendations": [
+        {
+          "period": "0m",
+          "strongBuy": 5,
+          "buy": 22,
+          "hold": 14,
+          "sell": 1,
+          "strongSell": 1
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### `POST /api/watchlist/<user_id>`
+
+Adds a stock symbol to the user's watchlist.
+
+**➡️ Example Request Body:**
+
+```json
+{
+  "symbol": "MSFT"
+}
+```
+
+**✅ Example Response (201 Created):**
+
+```json
+{
+  "id": "d1eebc99-9c0b-4ef8-bb6d-6bb9bd380a15",
+  "user_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "symbol": "MSFT"
+}
+```
+
+#### `DELETE /api/watchlist/<user_id>/<symbol>`
+
+Removes a stock symbol from the user's watchlist.
+
+**✅ Example Response (200 OK):**
+
+```json
+{
+  "message": "Symbol MSFT removed from watchlist"
+}
+```
+
+---
+
 ### **💰 Transactions**
 
 #### `GET /api/transactions/<user_id>`
@@ -270,47 +342,6 @@ Gets the current price for a specific symbol.
 }
 ```
 
-#### `GET /api/market/recommendations/<symbol>`
-
-Gets analyst recommendations for a specific symbol.
-
-**✅ Example Response (200 OK) for `/api/market/recommendations/AAPL`:**
-
-```json
-{
-  "recommendations": {
-    "symbol": "AAPL",
-    "recommendations": [
-      {
-        "date": "0m",
-        "strong_buy": 5,
-        "buy": 22,
-        "hold": 14,
-        "sell": 1,
-        "strong_sell": 1
-      },
-      {
-        "date": "-1m",
-        "strong_buy": 6,
-        "buy": 21,
-        "hold": 16,
-        "sell": 2,
-        "strong_sell": 1
-      }
-    ],
-    "summary": {
-      "total_analysts": 43,
-      "strong_buy": 5,
-      "buy": 22,
-      "hold": 14,
-      "sell": 1,
-      "strong_sell": 1
-    },
-    "last_updated": "2025-07-28T14:30:00Z"
-  }
-}
-```
-
 #### `POST /api/market/prices/refresh/<user_id>`
 
 Refreshes the cached market prices for all holdings in the user's portfolio.
@@ -405,18 +436,20 @@ Returns historical data points for drawing a portfolio value chart with cumulati
 
 ## 📋 **Complete API Endpoint Summary**
 
-| Method | Endpoint                                       | Description                  |
-| ------ | ---------------------------------------------- | ---------------------------- |
-| `GET`  | `/api/portfolio/<user_id>`                     | Get complete portfolio data  |
-| `PUT`  | `/api/portfolio/<user_id>`                     | Update portfolio/user info   |
-| `GET`  | `/api/transactions/<user_id>`                  | Get transaction history      |
-| `POST` | `/api/transactions/<user_id>`                  | Create new transaction       |
-| `GET`  | `/api/transactions/<user_id>/<transaction_id>` | Get specific transaction     |
-| `GET`  | `/api/market/search/<query>`                   | Search for stock symbols     |
-| `GET`  | `/api/market/price/<symbol>`                   | Get current price for symbol |
-| `GET`  | `/api/market/recommendations/<symbol>`         | Get analyst recommendations  |
-| `POST` | `/api/market/prices/refresh/<user_id>`         | Refresh portfolio prices     |
-| `GET`  | `/api/performance/<user_id>`                   | Get performance metrics      |
-| `GET`  | `/api/allocation/<user_id>`                    | Get asset allocation         |
-| `GET`  | `/api/portfolio/chart/<user_id>/<period>`      | Get portfolio chart data     |
-| `POST` | `/api/portfolio/snapshot/<user_id>`            | Create portfolio snapshot    |
+| Method   | Endpoint                                       | Description                  |
+| -------- | ---------------------------------------------- | ---------------------------- |
+| `GET`    | `/api/portfolio/<user_id>`                     | Get complete portfolio data  |
+| `PUT`    | `/api/portfolio/<user_id>`                     | Update portfolio/user info   |
+| `GET`    | `/api/watchlist/<user_id>`                     | Get user's watchlist         |
+| `POST`   | `/api/watchlist/<user_id>`                     | Add symbol to watchlist      |
+| `DELETE` | `/api/watchlist/<user_id>/<symbol>`            | Remove symbol from watchlist |
+| `GET`    | `/api/transactions/<user_id>`                  | Get transaction history      |
+| `POST`   | `/api/transactions/<user_id>`                  | Create new transaction       |
+| `GET`    | `/api/transactions/<user_id>/<transaction_id>` | Get specific transaction     |
+| `GET`    | `/api/market/search/<query>`                   | Search for stock symbols     |
+| `GET`    | `/api/market/price/<symbol>`                   | Get current price for symbol |
+| `POST`   | `/api/market/prices/refresh/<user_id>`         | Refresh portfolio prices     |
+| `GET`    | `/api/performance/<user_id>`                   | Get performance metrics      |
+| `GET`    | `/api/allocation/<user_id>`                    | Get asset allocation         |
+| `GET`    | `/api/portfolio/chart/<user_id>/<period>`      | Get portfolio chart data     |
+| `POST`   | `/api/portfolio/snapshot/<user_id>`            | Create portfolio snapshot    |
