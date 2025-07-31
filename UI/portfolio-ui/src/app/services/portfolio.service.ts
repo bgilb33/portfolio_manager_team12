@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest } from '../models/portfolio.model';
+import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData } from '../models/portfolio.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupabaseService } from './supabase.service';
 
@@ -14,8 +14,12 @@ export class PortfolioService {
   private timeSerisSubject = new BehaviorSubject<ChartData | null>(null);
   timeSeries$ = this.timeSerisSubject.asObservable();
 
+
   private userIdReady = new BehaviorSubject<boolean>(false);
   userIdReady$ = this.userIdReady.asObservable();
+
+  private marketSubject = new BehaviorSubject<PriceData [] | null>(null);
+  marketView$ = this.marketSubject.asObservable();
 
   host: string = "http://localhost:2000/api";
 
@@ -72,5 +76,42 @@ export class PortfolioService {
     console.log("CALLING")
     return this.http.post<TransactionResponse>(`${this.host}/transactions/${this.userID}`, transaction, this.httpOptions);
   }
+  getMajorIndices(): void {
+    const indices = [
+        { symbol: '^GSPC', name: 'S&P 500' },
+        { symbol: '^DJI', name: 'Dow Jones' },
+      { symbol: '^IXIC', name: 'NASDAQ' }
+    ];
+    
+    const symbols: PriceData[] = [];
+
+    
+    indices.forEach(index => {
+        this.getStockPrice(index.symbol).subscribe({
+            next: (response: PriceDataResponse) => {
+                console.log(response);
+                const data = response.price_data;
+                symbols.push({
+                    current_price: data.current_price,
+                    day_change: data.day_change,
+                    day_change_percent: data.day_change_percent,
+                    last_updated: data.last_updated,
+                    previous_close: data.previous_close,
+                    symbol: index.symbol,
+                    name: index.name
+                });
+            
+                if (symbols.length === indices.length) {
+                    this.marketSubject.next(symbols);
+                }
+            },
+            error: () => {
+                console.warn("ERROR");
+            }
+
+
+        });
+    });
+    }
 
 }

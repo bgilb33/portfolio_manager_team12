@@ -57,4 +57,34 @@ def validate_required_field(value, field_name: str):
     """Validate that a required field is present"""
     if value is None or value == "":
         raise ValueError(f"{field_name} is required")
-    return value 
+    return value
+
+def validate_sufficient_cash(user_id: str, required_amount: Decimal):
+    """Validate that user has sufficient cash for transaction"""
+    from services.holdings_service import get_holding_by_symbol
+    from decimal import Decimal
+    
+    cash_holding = get_holding_by_symbol(user_id, 'CASH')
+    if not cash_holding:
+        raise ValueError("Insufficient cash: No cash balance found")
+    
+    current_cash = Decimal(str(cash_holding['quantity']))
+    if current_cash < required_amount:
+        raise ValueError(f"Insufficient cash: Required ${required_amount}, Available ${current_cash}")
+    
+    return current_cash
+
+def validate_sufficient_stock(user_id: str, symbol: str, required_quantity: Decimal):
+    """Validate that user has sufficient stock quantity for sale"""
+    from services.holdings_service import get_holding_by_symbol
+    from decimal import Decimal
+    
+    holding = get_holding_by_symbol(user_id, symbol)
+    if not holding:
+        raise ValueError(f"Cannot sell {symbol}: No shares owned")
+    
+    current_quantity = Decimal(str(holding['quantity']))
+    if current_quantity < required_quantity:
+        raise ValueError(f"Insufficient {symbol} shares: Required {required_quantity}, Owned {current_quantity}")
+    
+    return current_quantity 
