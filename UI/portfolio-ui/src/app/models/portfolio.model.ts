@@ -76,6 +76,17 @@ export interface TransactionResponse {
   }
 }
 
+export interface TransactionsResponse {
+  transactions: Transaction[]
+}
+
+export interface CashRequest {
+  transaction_type: string,
+  amount: number,
+  transaction_date: Date,
+  notes: string
+}
+
 // Portfolio Analytics
 
 export interface Performance {
