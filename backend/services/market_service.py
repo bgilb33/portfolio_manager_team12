@@ -254,3 +254,92 @@ def get_portfolio_value_history(user_id: str, days: int = 30):
             'chart_data': [],
             'period_days': days
         }
+
+def get_analyst_recommendations(symbol: str):
+    """Get analyst recommendations for a stock symbol"""
+    try:
+        symbol = validate_stock_symbol(symbol)
+        ticker = yf.Ticker(symbol)
+        
+        # Get recommendations DataFrame
+        recommendations_df = ticker.get_recommendations()
+        
+        if recommendations_df.empty:
+            return {
+                'symbol': symbol,
+                'recommendations': [],
+                'summary': {
+                    'total_analysts': 0,
+                    'strong_buy': 0,
+                    'buy': 0,
+                    'hold': 0,
+                    'sell': 0,
+                    'strong_sell': 0
+                }
+            }
+        
+        # Convert DataFrame to list of recommendations
+        recommendations = []
+        for index, row in recommendations_df.iterrows():
+            try:
+                # Get date from the 'period' column
+                period = row['period']
+                
+                if hasattr(period, 'strftime'):
+                    date_str = period.strftime('%Y-%m-%d')
+                elif hasattr(period, 'str'):
+                    date_str = str(period)
+                else:
+                    date_str = str(period)
+                
+                recommendation = {
+                    'date': date_str,
+                    'strong_buy': int(row['strongBuy']),
+                    'buy': int(row['buy']),
+                    'hold': int(row['hold']),
+                    'sell': int(row['sell']),
+                    'strong_sell': int(row['strongSell'])
+                }
+                recommendations.append(recommendation)
+                
+            except Exception as e:
+                logger.error(f"Error processing row {index}: {e}")
+                continue
+        
+        # Calculate summary from most recent recommendation
+        latest = recommendations_df.iloc[0] if not recommendations_df.empty else None
+        if latest is not None:
+            # Calculate total analysts (excluding the 'period' column)
+            numeric_columns = ['strongBuy', 'buy', 'hold', 'sell', 'strongSell']
+            total_analysts = sum(int(latest[col]) for col in numeric_columns)
+            
+            summary = {
+                'total_analysts': total_analysts,
+                'strong_buy': int(latest['strongBuy']),
+                'buy': int(latest['buy']),
+                'hold': int(latest['hold']),
+                'sell': int(latest['sell']),
+                'strong_sell': int(latest['strongSell'])
+            }
+        else:
+            summary = {
+                'total_analysts': 0,
+                'strong_buy': 0,
+                'buy': 0,
+                'hold': 0,
+                'sell': 0,
+                'strong_sell': 0
+            }
+        
+
+        
+        return {
+            'symbol': symbol,
+            'recommendations': recommendations,
+            'summary': summary,
+            'last_updated': datetime.now(timezone.utc).isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting analyst recommendations for {symbol}: {e}")
+        return None

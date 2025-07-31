@@ -189,6 +189,48 @@ Creates a new transaction and updates holdings accordingly.
 }
 ```
 
+#### `GET /api/transactions/<user_id>/<transaction_id>`
+
+Returns a specific transaction by ID.
+
+**✅ Example Response (200 OK):**
+
+```json
+{
+  "transaction": {
+    "id": "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
+    "user_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "symbol": "AAPL",
+    "transaction_type": "BUY",
+    "quantity": 10,
+    "price": 150.0,
+    "total_amount": 1500.0,
+    "transaction_date": "2025-07-13T12:00:00Z",
+    "notes": "Bought 10 shares of Apple"
+  }
+}
+```
+
+#### `POST /api/portfolio/snapshot/<user_id>`
+
+Creates a portfolio value snapshot for historical tracking.
+
+**✅ Example Response (200 OK):**
+
+```json
+{
+  "snapshot": {
+    "id": "d1eebc99-9c0b-4ef8-bb6d-6bb9bd380a14",
+    "user_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "date": "2025-07-28",
+    "total_value": 20150.0,
+    "created_at": "2025-07-28T14:30:00Z"
+  },
+  "portfolio_value": 20150.0,
+  "timestamp": "2025-07-28T14:30:00Z"
+}
+```
+
 ---
 
 ### **📊 Market Data**
@@ -208,6 +250,64 @@ Searches for stock symbols.
       "currency": "USD"
     }
   ]
+}
+```
+
+#### `GET /api/market/price/<symbol>`
+
+Gets the current price for a specific symbol.
+
+**✅ Example Response (200 OK) for `/api/market/price/AAPL`:**
+
+```json
+{
+  "price_data": {
+    "symbol": "AAPL",
+    "current_price": 175.25,
+    "currency": "USD",
+    "last_updated": "2025-07-28T14:30:00Z"
+  }
+}
+```
+
+#### `GET /api/market/recommendations/<symbol>`
+
+Gets analyst recommendations for a specific symbol.
+
+**✅ Example Response (200 OK) for `/api/market/recommendations/AAPL`:**
+
+```json
+{
+  "recommendations": {
+    "symbol": "AAPL",
+    "recommendations": [
+      {
+        "date": "0m",
+        "strong_buy": 5,
+        "buy": 22,
+        "hold": 14,
+        "sell": 1,
+        "strong_sell": 1
+      },
+      {
+        "date": "-1m",
+        "strong_buy": 6,
+        "buy": 21,
+        "hold": 16,
+        "sell": 2,
+        "strong_sell": 1
+      }
+    ],
+    "summary": {
+      "total_analysts": 43,
+      "strong_buy": 5,
+      "buy": 22,
+      "hold": 14,
+      "sell": 1,
+      "strong_sell": 1
+    },
+    "last_updated": "2025-07-28T14:30:00Z"
+  }
 }
 ```
 
@@ -271,7 +371,9 @@ Returns the asset allocation breakdown between stocks and cash.
 
 #### `GET /api/portfolio/chart/<user_id>/<period>`
 
-Returns historical data points for drawing a portfolio value chart.
+Returns historical data points for drawing a portfolio value chart with cumulative changes.
+
+**Supported Periods:** `1W`, `1M`, `3M`, `6M`, `1Y`
 
 **✅ Example Response (200 OK) for `/api/portfolio/chart/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/1M`:**
 
@@ -280,17 +382,41 @@ Returns historical data points for drawing a portfolio value chart.
   "chart_data": [
     {
       "date": "2025-07-26",
-      "total_value": 19850.75
+      "total_value": 19850.75,
+      "cumulative_change": 0
     },
     {
       "date": "2025-07-27",
-      "total_value": 20010.5
+      "total_value": 20010.5,
+      "cumulative_change": 159.75
     },
     {
       "date": "2025-07-28",
-      "total_value": 20150.0
+      "total_value": 20150.0,
+      "cumulative_change": 299.25
     }
   ],
-  "period": "1M"
+  "period": "1M",
+  "days": 30
 }
 ```
+
+---
+
+## 📋 **Complete API Endpoint Summary**
+
+| Method | Endpoint                                       | Description                  |
+| ------ | ---------------------------------------------- | ---------------------------- |
+| `GET`  | `/api/portfolio/<user_id>`                     | Get complete portfolio data  |
+| `PUT`  | `/api/portfolio/<user_id>`                     | Update portfolio/user info   |
+| `GET`  | `/api/transactions/<user_id>`                  | Get transaction history      |
+| `POST` | `/api/transactions/<user_id>`                  | Create new transaction       |
+| `GET`  | `/api/transactions/<user_id>/<transaction_id>` | Get specific transaction     |
+| `GET`  | `/api/market/search/<query>`                   | Search for stock symbols     |
+| `GET`  | `/api/market/price/<symbol>`                   | Get current price for symbol |
+| `GET`  | `/api/market/recommendations/<symbol>`         | Get analyst recommendations  |
+| `POST` | `/api/market/prices/refresh/<user_id>`         | Refresh portfolio prices     |
+| `GET`  | `/api/performance/<user_id>`                   | Get performance metrics      |
+| `GET`  | `/api/allocation/<user_id>`                    | Get asset allocation         |
+| `GET`  | `/api/portfolio/chart/<user_id>/<period>`      | Get portfolio chart data     |
+| `POST` | `/api/portfolio/snapshot/<user_id>`            | Create portfolio snapshot    |
