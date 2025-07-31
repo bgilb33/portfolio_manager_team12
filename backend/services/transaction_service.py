@@ -58,6 +58,10 @@ def process_buy_transaction(user_id: str, symbol: str, quantity: Decimal, price:
         quantity = validate_positive_number(quantity, "quantity")
         price = validate_positive_number(price, "price")
         
+        # Ensure asset exists in assets table
+        from services.holdings_service import add_new_asset_if_needed
+        add_new_asset_if_needed(symbol)
+        
         # Use provided date or current date
         if transaction_date:
             date = datetime.fromisoformat(transaction_date.replace('Z', '+00:00'))
@@ -92,6 +96,10 @@ def process_sell_transaction(user_id: str, symbol: str, quantity: Decimal, price
         symbol = validate_stock_symbol(symbol)
         quantity = validate_positive_number(quantity, "quantity")
         price = validate_positive_number(price, "price")
+        
+        # Ensure asset exists in assets table
+        from services.holdings_service import add_new_asset_if_needed
+        add_new_asset_if_needed(symbol)
         
         # Use provided date or current date
         if transaction_date:
