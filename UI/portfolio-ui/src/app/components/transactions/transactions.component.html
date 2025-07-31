@@ -81,32 +81,75 @@
   <div class="flex flex-col gap-3 mb-6">
     <div class="grid grid-cols-[1fr_auto] items-center">
       <span class="text-sm font-medium">Amount:</span>
-      <span><input type="number" class="w-24 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Amount"></span>
+      <span><input type="number" class="w-24 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Amount" [(ngModel)]="cashAmount"></span>
     </div>
 
     <div class="grid grid-cols-[1fr_auto] items-center">
       <span class="text-sm font-medium">Action Type:</span>
       <span class="flex items-center gap-2 text-sm font-bold">
-        Deposit <input type="radio" name="action">
-        Withdraw <input type="radio" name="action">
+        Deposit <input type="radio" name="action" [(ngModel)]="cashTransactionType" value="DEPOSIT">
+        Withdraw <input type="radio" name="action" [(ngModel)]="cashTransactionType" value="WITHDRAW">
       </span>
     </div>
   </div>
 
   <div class="flex gap-2">
     <button class="flex-1 py-1.5 rounded bg-gray-300 text-gray-800 text-sm font-semibold hover:bg-gray-400">Cancel</button>
-    <button class="flex-1 py-1.5 rounded bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">Submit</button>
+    <button class="flex-1 py-1.5 rounded bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700" (click)="submitCashTransaction()">Submit</button>
+  </div>
+
+  <div *ngIf="cashStatusMessage" class="text-sm text-center font-medium mt-2"
+      [ngClass]="{
+        'text-green-600': cashStatusType === 'success',
+        'text-red-600': cashStatusType === 'error'
+      }">
+    {{ cashStatusMessage }}
   </div>
 
   <div class="mt-4">
-    <button class="w-full py-1.5 rounded bg-gray-200 text-sm font-medium text-center text-gray-800 hover:bg-gray-300">
+    <button class="w-full py-1.5 rounded bg-gray-200 text-sm font-medium text-center text-gray-800 hover:bg-gray-300" (click)="openTransactionModal()">
       View Transaction History
     </button>
   </div>
 
 
   <div
-    *ngIf="showModal"
+    *ngIf="showCashTransactionModal"
+    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+  >
+    <div class="bg-white p-6 rounded-lg w-[90%] max-w-md shadow-lg">
+      <h2 class="text-lg font-semibold mb-4 text-center">Confirm Trade</h2>
+        
+        <div class="text-sm space-y-2">
+          <div class="flex justify-between">
+            <span class="font-medium">Transaction Type:</span>
+            <span>{{ cashTransactionType }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-medium">Amount:</span>
+            <span>{{ formatPrice(cashAmount) }}</span>
+          </div>
+        </div>
+
+        <div class="mt-6 flex gap-2">
+          <button
+            class="flex-1 py-2 rounded bg-gray-300 text-sm font-semibold hover:bg-gray-400"
+            (click)="cancelCashTransaction()"
+          >
+            Cancel
+          </button>
+          <button
+            class="flex-1 py-2 rounded bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700"
+            (click)="confirmCashTransaction()"
+          >
+            Confirm
+          </button>
+        </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="showConfirmationModal"
     class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
   >
     <div class="bg-white p-6 rounded-lg w-[90%] max-w-md shadow-lg">
@@ -151,6 +194,34 @@
       </div>
     </div>
   </div>
+
+  <div *ngIf="showTransactionsModal" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+    <div class="bg-white w-full max-w-2xl max-h-[80vh] p-4 rounded shadow-lg overflow-y-auto relative">
+      <h2 class="text-lg font-semibold mb-4">Transaction History</h2>
+
+      <button class="absolute top-2 right-3 text-gray-500 hover:text-black" (click)="closeTransactionModal()">
+        &times;
+      </button>
+
+      <div *ngIf="transactions.length === 0" class="text-sm text-gray-500">
+        No transactions found.
+      </div>
+
+      <div *ngFor="let tx of transactions" class="border-b border-gray-200 py-3 text-sm">
+        <div class="flex justify-between">
+          <div>
+            <div class="font-semibold">{{ tx.transaction_type }} {{ tx.quantity }}</div>
+            <div class="text-gray-500">{{ tx.symbol }}</div>
+          </div>
+          <div class="text-right">
+            <div class="text-gray-700">{{ tx.transaction_date | date:'short' }}</div>
+            <div class="text-gray-800 font-semibold">{{ tx.total_amount | currency:'USD' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
 </div>
 

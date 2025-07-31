@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse } from '../models/portfolio.model';
+import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest } from '../models/portfolio.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable({
@@ -41,12 +41,8 @@ export class PortfolioService {
     });
   }
 
-  // getTimeSeriesData(): Observable<ChartData> {
-  //   return this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/1Y`, this.httpOptions);
-  // }
-
-  getUserTransactions(): Observable<Transaction[]> {
-    return this.http.get<Transaction[]>(`${this.host}/transactions/${this.userID}`, this.httpOptions);
+  getUserTransactions(): Observable<TransactionsResponse> {
+    return this.http.get<TransactionsResponse>(`${this.host}/transactions/${this.userID}`, this.httpOptions);
   }
 
   getStockPrice(ticker: string): Observable<PriceDataResponse> {
@@ -57,6 +53,9 @@ export class PortfolioService {
     return this.http.post<TransactionResponse>(`${this.host}/transactions/${this.userID}`, transaction, this.httpOptions);
   }
 
-
+  createCashTransaction(transaction: CashRequest): Observable<TransactionResponse> {
+    console.log("CALLING")
+    return this.http.post<TransactionResponse>(`${this.host}/transactions/${this.userID}`, transaction, this.httpOptions);
+  }
 
 }
