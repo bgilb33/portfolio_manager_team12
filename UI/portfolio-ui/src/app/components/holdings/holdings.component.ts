@@ -33,7 +33,9 @@ export class HoldingsComponent {
   }
 
   getNetWorth(): number {
-    return this.totalMarketValue + this.cashBalance;
+    // Net worth = stocks + cash
+    const stocksValue = this.getTotalMarketValue();
+    return stocksValue + this.cashBalance;
   }
 
   getCash(): number {
@@ -41,7 +43,10 @@ export class HoldingsComponent {
   }
 
   getTotalMarketValue(): number{
-    return this.totalMarketValue;
+    // Calculate stocks value by summing only non-cash holdings
+    return this.holdings
+      .filter(holding => holding.symbol !== 'CASH')
+      .reduce((sum, holding) => sum + holding.market_value, 0);
   }
 
   getTotalInvested(holding: Holding): number {
