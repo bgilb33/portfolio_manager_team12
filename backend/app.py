@@ -18,7 +18,8 @@ from services.transaction_service import (
 )
 from services.market_service import (
     search_symbols, get_current_price, refresh_all_prices,
-    get_market_status, store_portfolio_snapshot, get_portfolio_value_history
+    get_market_status, store_portfolio_snapshot, get_portfolio_value_history,
+    get_analyst_recommendations
 )
 from services.analytics_service import (
     calculate_portfolio_performance, calculate_asset_allocation,
@@ -159,6 +160,19 @@ def get_symbol_price(symbol):
         return jsonify({'price_data': price_data})
     except Exception as e:
         logger.error(f"Error in get_symbol_price: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/market/recommendations/<symbol>', methods=['GET'])
+def get_symbol_recommendations(symbol):
+    """Get analyst recommendations for a symbol"""
+    try:
+        recommendations = get_analyst_recommendations(symbol)
+        if recommendations:
+            return jsonify({'recommendations': recommendations})
+        else:
+            return jsonify({'error': 'Failed to get recommendations'}), 500
+    except Exception as e:
+        logger.error(f"Error in get_symbol_recommendations: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/market/prices/refresh/<user_id>', methods=['POST'])
