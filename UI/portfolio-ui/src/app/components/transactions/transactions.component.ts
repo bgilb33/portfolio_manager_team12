@@ -87,16 +87,31 @@ export class TransactionsComponent implements OnInit {
         transaction_date: new Date()
       }
 
-      this.portfolioService.createTransaction(transactionRequest).subscribe(data => {
-        console.log("Trade Data:", data);
-        if (data.transaction.id != null) {
-          this.statusMessage = 'Trade submitted successfully.';
-          this.statusType = 'success';
-          this.portfolioService.getPortfolio();
-          this.portfolioService.getTimeSeriesData();
-        }
-        else {
-          this.statusMessage = 'Trade failed. Please try again.';
+      this.portfolioService.createTransaction(transactionRequest).subscribe({
+        next: (data) => {
+          console.log("Trade Data:", data);
+          if (data.transaction.id != null) {
+            this.statusMessage = 'Trade submitted successfully.';
+            this.statusType = 'success';
+            this.portfolioService.getPortfolio();
+            this.portfolioService.getTimeSeriesData();
+          }
+          else {
+            this.statusMessage = 'Trade failed. Please try again.';
+            this.statusType = 'error';
+          }
+        },
+        error: (error) => {
+          console.error("Trade Error:", error);
+          if (error.error && error.error.error) {
+            this.statusMessage = error.error.error;
+          } else if (error.error && error.error.detail) {
+            this.statusMessage = error.error.detail;
+          } else if (error.message) {
+            this.statusMessage = error.message;
+          } else {
+            this.statusMessage = 'Trade failed. Please try again.';
+          }
           this.statusType = 'error';
         }
       })
@@ -131,15 +146,30 @@ export class TransactionsComponent implements OnInit {
         notes: ""
       }
 
-      this.portfolioService.createCashTransaction(transactionRequest).subscribe(data => {
-        console.log("CASH:", data);
-        if (data.transaction.id != null) {
-          this.cashStatusMessage = 'Transaction submitted successfully.';
-          this.cashStatusType = 'success';
-          this.portfolioService.getPortfolio();
-        }
-        else {
-          this.cashStatusMessage = 'Trade failed. Please try again.';
+      this.portfolioService.createCashTransaction(transactionRequest).subscribe({
+        next: (data) => {
+          console.log("CASH:", data);
+          if (data.transaction.id != null) {
+            this.cashStatusMessage = 'Transaction submitted successfully.';
+            this.cashStatusType = 'success';
+            this.portfolioService.getPortfolio();
+          }
+          else {
+            this.cashStatusMessage = 'Trade failed. Please try again.';
+            this.cashStatusType = 'error';
+          }
+        },
+        error: (error) => {
+          console.error("Cash Transaction Error:", error);
+          if (error.error && error.error.error) {
+            this.cashStatusMessage = error.error.error;
+          } else if (error.error && error.error.detail) {
+            this.cashStatusMessage = error.error.detail;
+          } else if (error.message) {
+            this.cashStatusMessage = error.message;
+          } else {
+            this.cashStatusMessage = 'Transaction failed. Please try again.';
+          }
           this.cashStatusType = 'error';
         }
       })
