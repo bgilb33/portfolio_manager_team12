@@ -9,7 +9,7 @@ python-dotenv==1.0.0
 supabase==2.0.2
 
 # Market data
-yfinance==0.2.28
+yfinance[nospam]
 
 # Data manipulation (for analytics)
 pandas==2.1.4
