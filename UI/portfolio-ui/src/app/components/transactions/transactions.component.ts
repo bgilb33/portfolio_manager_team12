@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PortfolioService } from '../../services/portfolio.service';
-import { PortfolioData, PriceData, TransactionRequest } from '../../models/portfolio.model';
+import { PortfolioData, PriceData, TransactionRequest, Transaction, CashRequest } from '../../models/portfolio.model';
 
 @Component({
   selector: 'app-transactions',
@@ -10,15 +10,25 @@ import { PortfolioData, PriceData, TransactionRequest } from '../../models/portf
 export class TransactionsComponent implements OnInit {
 
   portfolio: PortfolioData | null = null;
+
   current_stock: PriceData | null = null;
   searchError: boolean = false;
+
   searchQuery: string = '';
   tradeType: string = '';
   quantity: number | null = null;
-  showModal: boolean = false;
+  showConfirmationModal: boolean = false;
   statusMessage: string = '';
   statusType: 'success' | 'error' | '' = '';
 
+  transactions: Transaction[] = [];
+  showTransactionsModal: boolean = false;
+
+  cashAmount: number | null = null;
+  cashTransactionType: string = '';
+  showCashTransactionModal: boolean = false;
+  cashStatusMessage: string = '';
+  cashStatusType: 'success' | 'error' | '' = '';
 
   constructor(private portfolioService: PortfolioService) { }
 
@@ -26,6 +36,11 @@ export class TransactionsComponent implements OnInit {
     this.portfolioService.portfolio$.subscribe(data => {
       this.portfolio = data;
       console.log(data);
+    })
+
+    this.portfolioService.getUserTransactions().subscribe(data => {
+      this.transactions = data.transactions;
+      console.log(this.transactions);
     })
   }
 
@@ -59,7 +74,7 @@ export class TransactionsComponent implements OnInit {
       return;
     }
 
-    this.showModal = true;
+    this.showConfirmationModal = true;
   }
 
   confirmTrade(): void {
@@ -87,7 +102,7 @@ export class TransactionsComponent implements OnInit {
       })
     }
 
-    this.showModal = false;
+    this.showConfirmationModal = false;
     this.searchQuery = '';
     this.current_stock = null;
     this.tradeType = '';
@@ -95,7 +110,48 @@ export class TransactionsComponent implements OnInit {
   }
 
   cancelTrade(): void {
-    this.showModal = false;
+    this.showConfirmationModal = false;
+  }
+
+  submitCashTransaction(): void {
+    if (!this.cashAmount || !this.cashTransactionType) {
+      alert("Please complete all trade fields.");
+      return;
+    }
+    this.showCashTransactionModal = true;
+  }
+
+  confirmCashTransaction(): void {
+
+    if (this.cashAmount && this.cashTransactionType != '') {
+      let transactionRequest: CashRequest = {
+        transaction_type: this.cashTransactionType,
+        amount: this.cashAmount,
+        transaction_date: new Date(),
+        notes: ""
+      }
+
+      this.portfolioService.createCashTransaction(transactionRequest).subscribe(data => {
+        console.log("CASH:", data);
+        if (data.transaction.id != null) {
+          this.cashStatusMessage = 'Transaction submitted successfully.';
+          this.cashStatusType = 'success';
+          this.portfolioService.getPortfolio();
+        }
+        else {
+          this.cashStatusMessage = 'Trade failed. Please try again.';
+          this.cashStatusType = 'error';
+        }
+      })
+    }
+
+    this.showCashTransactionModal = false;
+    this.cashAmount = null;
+    this.cashTransactionType = '';
+  }
+
+  cancelCashTransaction(): void {
+    this.showCashTransactionModal = false;
   }
 
   formatPrice(value: number | undefined | null): string {
@@ -106,6 +162,14 @@ export class TransactionsComponent implements OnInit {
     if (!this.current_stock || !this.quantity) return 'N/A';
     const total = this.current_stock.current_price * this.quantity;
     return `$${total.toFixed(2)}`;
+  }
+
+  openTransactionModal(): void {
+    this.showTransactionsModal = true;
+  }
+
+  closeTransactionModal(): void {
+    this.showTransactionsModal = false;
   }
 
 }
