@@ -1,0 +1,40 @@
+.dashboard-grid {
+  display: grid;
+  width: 100vw;
+  height: 100vh;
+  grid-template-columns: 300px 1fr 300px;
+  grid-template-rows: calc(100vh - 250px) 250px; /* Guarantees total = 100vh */
+  grid-template-areas:
+    "holdings graphs transactions"
+    "holdings market market";
+  overflow: hidden;
+}
+
+
+/* Grid Area Styling */
+.holdings {
+  grid-area: holdings;
+  background-color: #f9f9f9;
+  border-right: 1px solid #ddd;
+  overflow: hidden;
+  height: 100%;
+}
+
+.graphs {
+  grid-area: graphs;
+  background-color: white;
+  overflow: hidden;
+}
+
+.transactions {
+  grid-area: transactions;
+  background-color: #f9f9f9;
+  overflow: hidden;
+  border-left: 1px solid #ddd;
+}
+
+.market-overview {
+  grid-area: market;
+  background-color: #f9f9f9;
+  border-top: 1px solid #ddd;
+}

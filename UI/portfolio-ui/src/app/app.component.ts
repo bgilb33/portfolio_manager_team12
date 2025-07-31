@@ -6,13 +6,6 @@ import { PortfolioService } from './services/portfolio.service';
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit{
-  title = 'portfolio-ui';
+export class AppComponent {
 
-  constructor(private portfolioService: PortfolioService) {}
-
-  ngOnInit(): void {
-      this.portfolioService.getPortfolio();
-      this.portfolioService.getTimeSeriesData();
-  }
 }

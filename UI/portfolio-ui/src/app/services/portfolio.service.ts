@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData } from '../models/portfolio.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { SupabaseService } from './supabase.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,13 +14,27 @@ export class PortfolioService {
   private timeSerisSubject = new BehaviorSubject<ChartData | null>(null);
   timeSeries$ = this.timeSerisSubject.asObservable();
 
+
+  private userIdReady = new BehaviorSubject<boolean>(false);
+  userIdReady$ = this.userIdReady.asObservable();
+
   private marketSubject = new BehaviorSubject<PriceData [] | null>(null);
   marketView$ = this.marketSubject.asObservable();
 
-  host: String = "http://localhost:2000/api";
-  userID: String = "75e44b0b-bb72-4e18-bb79-830fd6bfcdca";
+  host: string = "http://localhost:2000/api";
 
-  constructor(private http: HttpClient) { 
+  userID: string | null = null;
+
+  constructor(private http: HttpClient, private supabase: SupabaseService) { 
+    this.loadUserId()
+  }
+
+  async loadUserId() {
+    const { data, error } = await this.supabase.getCurrentUser();
+    if (data?.user) {
+      this.userID = data.user.id;
+      this.userIdReady.next(true); 
+    }
   }
 
   httpOptions = {

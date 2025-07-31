@@ -38,9 +38,13 @@ export class TransactionsComponent implements OnInit {
       console.log(data);
     })
 
-    this.portfolioService.getUserTransactions().subscribe(data => {
-      this.transactions = data.transactions;
-      console.log(this.transactions);
+    this.portfolioService.userIdReady$.subscribe(ready => {
+      if (ready) {
+        this.portfolioService.getUserTransactions().subscribe(data => {
+          this.transactions = data.transactions;
+          console.log(this.transactions);
+        })
+      }
     })
   }
 
