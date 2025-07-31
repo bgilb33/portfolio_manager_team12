@@ -62,13 +62,13 @@ export class GraphsComponent implements OnInit {
       this.portfolio = data;
 
       this.pieChartOptions = {
-        series: this.portfolio.holdings.map(h => h.market_value).concat(this.portfolio.portfolio_summary.cash_balance),
+        series: this.portfolio.holdings.map(h => h.market_value),
         chart: {
           type: 'pie',
           height: '250px',
           //width: '100%'
         },
-        labels: this.portfolio.holdings.map(h => h.symbol).concat('CASH'),
+        labels: this.portfolio.holdings.map(h => h.symbol),
         title: {
           text: 'Holdings Allocation'
         },
