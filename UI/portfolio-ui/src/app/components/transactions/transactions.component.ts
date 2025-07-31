@@ -111,6 +111,11 @@ export class TransactionsComponent implements OnInit {
 
   cancelTrade(): void {
     this.showConfirmationModal = false;
+    this.showConfirmationModal = false;
+    this.searchQuery = '';
+    this.current_stock = null;
+    this.tradeType = '';
+    this.quantity = null;
   }
 
   submitCashTransaction(): void {
@@ -152,6 +157,9 @@ export class TransactionsComponent implements OnInit {
 
   cancelCashTransaction(): void {
     this.showCashTransactionModal = false;
+    this.showCashTransactionModal = false;
+    this.cashAmount = null;
+    this.cashTransactionType = '';
   }
 
   formatPrice(value: number | undefined | null): string {

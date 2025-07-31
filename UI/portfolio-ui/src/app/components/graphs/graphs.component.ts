@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { PortfolioService } from '../../services/portfolio.service';
 import { PortfolioData, ChartData, PortfolioSnapshot } from '../../models/portfolio.model';
-import { ApexAxisChartSeries, ApexChart, ApexXAxis, ApexTitleSubtitle, ApexNonAxisChartSeries, ApexResponsive } from 'ngx-apexcharts';
+import { ApexAxisChartSeries, ApexChart, ApexXAxis, ApexTitleSubtitle, ApexNonAxisChartSeries, ApexResponsive, ApexYAxis } from 'ngx-apexcharts';
 
 export type LineChartOptions = {
   series: ApexAxisChartSeries;
   chart: ApexChart;
   xaxis: ApexXAxis;
+  yaxis: ApexYAxis;
   title: ApexTitleSubtitle;
 };
 
@@ -29,6 +30,7 @@ export class GraphsComponent implements OnInit {
     series: [],
     chart: { type: 'line' },
     xaxis: {},
+    yaxis: {},
     title: {}
   };
 
@@ -36,6 +38,7 @@ export class GraphsComponent implements OnInit {
     series: [],
     chart: { type: 'line' },
     xaxis: {},
+    yaxis: {},
     title: {}
   };
 
@@ -114,6 +117,16 @@ export class GraphsComponent implements OnInit {
           },
           xaxis: {
             categories: dates
+          },
+          yaxis: {
+            labels: {
+              formatter: function (value: number) {
+                return '$' + value.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                });
+              }
+            }
           }
         };
 
@@ -137,6 +150,16 @@ export class GraphsComponent implements OnInit {
           },
           xaxis: {
             categories: dates
+          },
+          yaxis: {
+            labels: {
+              formatter: function (value: number) {
+                return '$' + value.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                });
+              }
+            }
           }
         };
       }
