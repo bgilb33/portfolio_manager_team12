@@ -64,14 +64,17 @@ export class GraphsComponent implements OnInit {
       if (!data) return;
       this.portfolio = data;
 
+      // Filter out holdings with zero quantity for the pie chart
+      const activeHoldings = this.portfolio.holdings.filter(h => h.quantity > 0);
+
       this.pieChartOptions = {
-        series: this.portfolio.holdings.map(h => h.market_value),
+        series: activeHoldings.map(h => h.market_value),
         chart: {
           type: 'pie',
           height: '250px',
           //width: '100%'
         },
-        labels: this.portfolio.holdings.map(h => h.symbol),
+        labels: activeHoldings.map(h => h.symbol),
         title: {
           text: 'Holdings Allocation'
         },
