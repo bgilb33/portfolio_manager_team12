@@ -21,11 +21,14 @@ export class HoldingsComponent {
     this.portfolioService.portfolio$.subscribe(data => {
       if (data){
         this.portfolio = data;
-        this.holdings = data.holdings;
+        // Filter out holdings with zero quantity
+        this.holdings = data.holdings.filter(holding => holding.quantity > 0);
         this.cashBalance = data.portfolio_summary.cash_balance;
         this.totalMarketValue = data.portfolio_summary.total_market_value;
         if (this.holdings.length > 0) {
           this.selectedHolding = this.holdings[0];
+        } else {
+          this.selectedHolding = null;
         }
       }
       console.log(this.portfolio);
@@ -33,7 +36,7 @@ export class HoldingsComponent {
   }
 
   getNetWorth(): number {
-    // Net worth = stocks + cash
+    // Net worth = stocks (at market value) + cash
     const stocksValue = this.getTotalMarketValue();
     return stocksValue + this.cashBalance;
   }
@@ -43,10 +46,30 @@ export class HoldingsComponent {
   }
 
   getTotalMarketValue(): number{
-    // Calculate stocks value by summing only non-cash holdings
+    // Calculate stocks value by summing only non-cash holdings at current market prices
     return this.holdings
       .filter(holding => holding.symbol !== 'CASH')
       .reduce((sum, holding) => sum + holding.market_value, 0);
+  }
+
+  getTotalCostBasis(): number {
+    // Calculate stocks value based on average cost (total cost basis)
+    return this.holdings
+      .filter(holding => holding.symbol !== 'CASH')
+      .reduce((sum, holding) => sum + holding.total_cost, 0);
+  }
+
+  getStocksAtCost(): number {
+    // Return stocks value based on average cost instead of market value
+    return this.getTotalCostBasis();
+  }
+
+  getUnrealizedGainLoss(): number {
+    // Unrealized gain/loss = Net worth - (Stocks at cost + Cash)
+    const netWorth = this.getNetWorth();
+    const stocksAtCost = this.getStocksAtCost();
+    const cash = this.getCash();
+    return netWorth - (stocksAtCost + cash);
   }
 
   getTotalInvested(holding: Holding): number {
