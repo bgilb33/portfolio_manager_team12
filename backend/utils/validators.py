@@ -30,7 +30,6 @@ def validate_stock_symbol(symbol: str) -> str:
     if not symbol or not isinstance(symbol, str):
         raise ValueError("Symbol is required")
     
-    # Enhanced symbol validation (letters, numbers, dots, hyphens, caret for indices)
     if not re.match(r'^[A-Z0-9.^=-]+$', symbol.upper()):
         raise ValueError("Invalid symbol format")
     
