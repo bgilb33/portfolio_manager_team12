@@ -16,6 +16,10 @@
            />
   </div>
 
+  <div *ngIf="searchError" class="text-sm text-red-600 mb-2">
+    Stock not found. Please try again.
+  </div>
+
   <div *ngIf="current_stock" class="w-full p-3 mb-4 rounded bg-white border shadow text-sm">
     <div class="flex justify-between mb-1">
       <span class="font-semibold">{{ current_stock.symbol }}</span>
@@ -37,43 +41,37 @@
     </div>
   </div>
 
-
-  <!-- <div class="flex flex-col gap-2 mb-4">
-    <div class="grid grid-cols-[1fr_auto]">
-      <span class="text-sm font-medium text-left">Ask Price:</span>
-      <span class="text-sm font-bold text-right">$18.20</span>
-    </div>
-    <div class="grid grid-cols-[1fr_auto]">
-      <span class="text-sm font-medium text-left">Bid Price:</span>
-      <span class="text-sm font-bold text-right">$18.60</span>
-    </div>
-  </div> -->
-
   <div class="flex flex-col gap-3 mb-6">
     <div class="grid grid-cols-[1fr_auto] items-center">
       <span class="text-sm font-medium">Trade Type:</span>
       <span class="flex items-center gap-2 text-sm font-bold">
-        Buy <input type="radio" name="trade">
-        Sell <input type="radio" name="trade">
+        Buy <input type="radio" name="trade" [(ngModel)]="tradeType" value="BUY">
+        Sell <input type="radio" name="trade" [(ngModel)]="tradeType" value="SELL">
       </span>
     </div>
 
     <div class="grid grid-cols-[1fr_auto] items-center">
       <span class="text-sm font-medium">Quantity:</span>
-      <span><input type="number" class="w-24 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Qty"></span>
+      <span><input type="number" class="w-24 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Qty" [(ngModel)]="quantity"></span>
     </div>
-
-    <div class="text-center text-sm font-medium">or</div>
 
     <div class="grid grid-cols-[1fr_auto] items-center">
       <span class="text-sm font-medium">Total Investment:</span>
-      <input type="number" class="w-24 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Total">
+      <span class="text-sm font-medium" *ngIf="quantity != null && current_stock != null">{{quantity*current_stock.current_price | currency:'USD':'symbol':'1.2-2'}}</span>
     </div>
   </div>
 
   <div class="flex gap-2 mb-6">
     <button class="flex-1 py-2 rounded bg-gray-300 text-gray-800 text-sm font-semibold hover:bg-gray-400">Cancel</button>
-    <button class="flex-1 py-2 rounded bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">Submit</button>
+    <button class="flex-1 py-2 rounded bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700" (click)="submitTrade()">Submit</button>
+  </div>
+
+  <div *ngIf="statusMessage" class="text-sm text-center font-medium mt-2"
+      [ngClass]="{
+        'text-green-600': statusType === 'success',
+        'text-red-600': statusType === 'error'
+      }">
+    {{ statusMessage }}
   </div>
 
   <div class="flex justify-center items-center h-[30px] bg-gray-300 rounded mb-4">
@@ -107,4 +105,53 @@
   </div>
 
 
+  <div
+    *ngIf="showModal"
+    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+  >
+    <div class="bg-white p-6 rounded-lg w-[90%] max-w-md shadow-lg">
+      <h2 class="text-lg font-semibold mb-4 text-center">Confirm Trade</h2>
+
+      <div class="text-sm space-y-2">
+        <div class="flex justify-between">
+          <span class="font-medium">Stock:</span>
+          <span>{{ current_stock?.symbol }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Trade Type:</span>
+          <span>{{ tradeType }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Quantity:</span>
+          <span>{{ quantity }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Price per Share:</span>
+          <span>{{ formatPrice(current_stock?.current_price) }}</span>
+        </div>
+        <div class="flex justify-between border-t pt-2">
+          <span class="font-medium">Total:</span>
+          <span class="font-bold">{{ formatTotal() }}</span>
+        </div>
+      </div>
+
+      <div class="mt-6 flex gap-2">
+        <button
+          class="flex-1 py-2 rounded bg-gray-300 text-sm font-semibold hover:bg-gray-400"
+          (click)="cancelTrade()"
+        >
+          Cancel
+        </button>
+        <button
+          class="flex-1 py-2 rounded bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700"
+          (click)="confirmTrade()"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>
+
+

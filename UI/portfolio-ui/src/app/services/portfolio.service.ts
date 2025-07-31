@@ -9,6 +9,10 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 export class PortfolioService {
   private portfolioSubject = new BehaviorSubject<PortfolioData | null>(null);
   portfolio$ = this.portfolioSubject.asObservable();
+
+  private timeSerisSubject = new BehaviorSubject<ChartData | null>(null);
+  timeSeries$ = this.timeSerisSubject.asObservable();
+
   host: String = "http://localhost:2000/api";
   userID: String = "75e44b0b-bb72-4e18-bb79-830fd6bfcdca";
 
@@ -29,9 +33,17 @@ export class PortfolioService {
   }
 
   // Set as a year for now, will make it changeable via UI later on
-  getTimeSeriesData(): Observable<ChartData> {
-    return this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/1Y`, this.httpOptions);
+
+  getTimeSeriesData(): void {
+    this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/1Y`, this.httpOptions)
+    .subscribe((chartData: ChartData) => {
+      this.timeSerisSubject.next(chartData);
+    });
   }
+
+  // getTimeSeriesData(): Observable<ChartData> {
+  //   return this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/1Y`, this.httpOptions);
+  // }
 
   getUserTransactions(): Observable<Transaction[]> {
     return this.http.get<Transaction[]>(`${this.host}/transactions/${this.userID}`, this.httpOptions);

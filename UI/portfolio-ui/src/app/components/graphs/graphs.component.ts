@@ -84,62 +84,64 @@ export class GraphsComponent implements OnInit {
       };
     });
 
-    // Getting time series data
-    this.portfolioService.getTimeSeriesData().subscribe(data => {
-      this.chartData = data;
-      this.timeSeriesData = data.chart_data;
-      const dates = this.timeSeriesData.map(d =>
-        new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      );
+    this.portfolioService.timeSeries$.subscribe(data => {
+      if (data?.chart_data) {
+        this.chartData = data;
+        this.timeSeriesData = data?.chart_data;
 
-      this.portfolioValueChartOptions = {
-        series: [
-          {
-            name: 'Portfolio Value',
-            data: this.timeSeriesData.map(d => ({ x: d.date, y: d.total_value }))
-          }
-        ],
-        chart: {
-          type: 'line',
-          height: '250px',
-          //width: '100%',
-          toolbar: {
-            show: false
-          }
-        },
-        title: {
-          text: 'Portfolio Value Over Time'
-        },
-        xaxis: {
-          categories: dates
-        }
-      };
+        //Setting graphs
+        const dates = this.timeSeriesData.map(d =>
+          new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        );
 
-      // Setting gain loss chart options
-      this.gainLossChartOptions = {
-        series: [
-          {
-            name: 'Cumulative Change',
-            data: this.timeSeriesData.map(d => ({ x: d.date, y: d.cumulative_change }))
+        this.portfolioValueChartOptions = {
+          series: [
+            {
+              name: 'Portfolio Value',
+              data: this.timeSeriesData.map(d => ({ x: d.date, y: d.total_value }))
+            }
+          ],
+          chart: {
+            type: 'line',
+            height: '250px',
+            //width: '100%',
+            toolbar: {
+              show: false
+            }
+          },
+          title: {
+            text: 'Portfolio Value Over Time'
+          },
+          xaxis: {
+            categories: dates
           }
-        ],
-        chart: {
-          type: 'line',
-          height: '250px',
-          //width: '100%',
-          toolbar: {
-            show: false
-          }
-        },
-        title: {
-          text: 'Gain/Loss Over Time'
-        },
-        xaxis: {
-          categories: dates
-        }
-      };
+        };
 
-    });
+        this.gainLossChartOptions = {
+          series: [
+            {
+              name: 'Cumulative Change',
+              data: this.timeSeriesData.map(d => ({ x: d.date, y: d.cumulative_change }))
+            }
+          ],
+          chart: {
+            type: 'line',
+            height: '250px',
+            //width: '100%',
+            toolbar: {
+              show: false
+            }
+          },
+          title: {
+            text: 'Gain/Loss Over Time'
+          },
+          xaxis: {
+            categories: dates
+          }
+        };
+      }
+    })
+
   };
 
 }

@@ -64,14 +64,16 @@ export interface TransactionRequest {
 }
 
 export interface TransactionResponse {
-  id: string,
-  user_id: string,
-  symbol: string,
-  transaction_type: string,
-  quantity: number,
-  price: number,
-  total_amount: number,
-  transaction_date: Date
+  transaction: {
+    id: string,
+    user_id: string,
+    symbol: string,
+    transaction_type: string,
+    quantity: number,
+    price: number,
+    total_amount: number,
+    transaction_date: Date
+  }
 }
 
 // Portfolio Analytics
