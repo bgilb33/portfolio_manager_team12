@@ -82,6 +82,10 @@ def cache_price(symbol: str, price_data: dict):
     try:
         client = get_supabase_client()
         
+        # Ensure asset exists in assets table before caching price
+        from services.holdings_service import add_new_asset_if_needed
+        add_new_asset_if_needed(symbol, price_data.get('name', symbol))
+        
         # Prepare data for database
         cache_data = {
             'symbol': symbol,
