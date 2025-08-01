@@ -74,6 +74,10 @@ export class HoldingsComponent {
     return netWorth - (stocksAtCost + cash);
   }
 
+  getRealizedGainLoss(): number {
+    return this.portfolio?.summary.total_realized_gain_loss || 0;
+  }
+
   getTotalInvested(holding: Holding): number {
     return holding.quantity * holding.average_cost;
   }

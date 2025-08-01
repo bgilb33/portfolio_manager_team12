@@ -27,6 +27,10 @@
       <span>Unrealized G/L:</span>
       <span>${{ getUnrealizedGainLoss() | number: '1.2-2' }}</span>
     </div>
+    <div class="flex justify-between font-semibold" [ngClass]="getRealizedGainLoss() >= 0 ? 'text-green-600' : 'text-red-600'">
+      <span>Realized G/L:</span>
+      <span>${{ getRealizedGainLoss() | number: '1.2-2' }}</span>
+    </div>
   </div>
 
   <div class="flex items-center justify-center h-8 mb-2 bg-gray-300 rounded">

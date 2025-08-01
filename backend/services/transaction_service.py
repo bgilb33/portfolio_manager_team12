@@ -171,6 +171,9 @@ def process_sell_transaction(user_id: str, symbol: str, quantity: Decimal, price
             date = datetime.now(timezone.utc)
         
         total_amount = quantity * price
+
+        # Calculate realized gain/loss
+        realized_gain_loss = calculate_realized_gain_loss(user_id, symbol, quantity, price)
         
         # Update holding using USER'S actual sale data (can go negative)
         update_holding_for_sell(user_id, symbol, quantity)
@@ -180,7 +183,7 @@ def process_sell_transaction(user_id: str, symbol: str, quantity: Decimal, price
         
         # Record transaction with USER'S data
         transaction = create_transaction_record(
-            user_id, symbol, 'SELL', quantity, price, total_amount, date, notes
+            user_id, symbol, 'SELL', quantity, price, total_amount, date, notes, realized_gain_loss
         )
         
         return transaction
@@ -423,7 +426,7 @@ def update_cash_balance(user_id: str, amount: Decimal):
 
 def create_transaction_record(user_id: str, symbol: str, transaction_type: str, 
                             quantity: Decimal, price: Decimal, total_amount: Decimal, 
-                            transaction_date: datetime, notes: str = None):
+                            transaction_date: datetime, notes: str = None, realized_gain_loss: Decimal = Decimal('0')):
     """Create transaction record with USER'S data"""
     try:
         client = get_supabase_client()
@@ -437,7 +440,8 @@ def create_transaction_record(user_id: str, symbol: str, transaction_type: str,
                 'price': float(price),
                 'total_amount': float(total_amount),
                 'transaction_date': transaction_date.isoformat(),
-                'notes': notes
+                'notes': notes,
+                'realized_gain_loss': float(realized_gain_loss)
             })\
             .execute()
         
@@ -477,4 +481,51 @@ def get_user_holding_quantity(user_id: str, symbol: str):
         return float(holding.data['quantity']) if holding.data else 0.0
     except Exception as e:
         logger.error(f"Error getting holding quantity for {symbol}: {e}")
-        return 0.0 
+        return 0.0
+
+
+def calculate_realized_gain_loss(user_id: str, symbol: str, sell_quantity: Decimal, sell_price: Decimal):
+    """Calculate realized gain/loss for a sell transaction using FIFO"""
+    try:
+        client = get_supabase_client()
+        
+        # Get all BUY transactions for the symbol, oldest first
+        buy_transactions = client.table('transactions')\
+            .select('quantity', 'price', 'transaction_date')\
+            .eq('user_id', user_id)\
+            .eq('symbol', symbol)\
+            .eq('transaction_type', 'BUY')\
+            .order('transaction_date', desc=False)\
+            .execute()
+
+        if not buy_transactions.data:
+            return Decimal('0')
+
+        realized_gain_loss = Decimal('0')
+        remaining_sell_quantity = sell_quantity
+        
+        # Use a copy of the data to manipulate
+        buy_data = list(buy_transactions.data)
+
+        for buy_tx in buy_data:
+            if remaining_sell_quantity <= 0:
+                break
+
+            buy_qty = Decimal(str(buy_tx['quantity']))
+            buy_price = Decimal(str(buy_tx['price']))
+            
+            # Quantity to be sold from this buy transaction
+            qty_to_sell = min(remaining_sell_quantity, buy_qty)
+            
+            # Calculate gain/loss for this portion
+            gain_loss = (sell_price - buy_price) * qty_to_sell
+            realized_gain_loss += gain_loss
+            
+            # Update remaining quantities
+            remaining_sell_quantity -= qty_to_sell
+            buy_tx['quantity'] = str(buy_qty - qty_to_sell) # Update the copy
+
+        return realized_gain_loss
+    except Exception as e:
+        logger.error(f"Error calculating realized gain/loss: {e}")
+        raise Exception("Failed to calculate realized gain/loss") 

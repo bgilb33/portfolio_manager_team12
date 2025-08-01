@@ -18,6 +18,9 @@ def get_user_holdings(user_id: str):
             quantity = Decimal(str(holding['quantity']))
             average_cost = Decimal(str(holding['average_cost']))
             
+            # Get total realized gain/loss for this holding
+            realized_gain_loss_total = get_total_realized_gain_loss(user_id, symbol)
+
             if symbol == 'CASH':
                 holdings.append({
                     'symbol': symbol,
@@ -30,7 +33,8 @@ def get_user_holdings(user_id: str):
                     'gain_loss': 0.0,
                     'gain_loss_percent': 0.0,
                     'day_change': 0.0,
-                    'day_change_percent': 0.0
+                    'day_change_percent': 0.0,
+                    'realized_gain_loss': 0.0
                 })
             else:
                 # Get current price from CACHED market_prices table (no yfinance call)
@@ -58,7 +62,8 @@ def get_user_holdings(user_id: str):
                     'gain_loss': float(gain_loss),
                     'gain_loss_percent': float(gain_loss_percent),
                     'day_change': float(price_data.get('day_change', 0)) if price_data else 0.0,
-                    'day_change_percent': float(price_data.get('day_change_percent', 0)) if price_data else 0.0
+                    'day_change_percent': float(price_data.get('day_change_percent', 0)) if price_data else 0.0,
+                    'realized_gain_loss': float(realized_gain_loss_total)
                 })
         
         return holdings
@@ -122,6 +127,7 @@ def calculate_portfolio_totals(user_id: str):
         total_cost_basis = sum(holding['total_cost'] for holding in holdings)
         total_gain_loss = total_market_value - total_cost_basis
         total_gain_loss_percent = (total_gain_loss / total_cost_basis * 100) if total_cost_basis != 0 else 0
+        total_realized_gain_loss = sum(holding.get('realized_gain_loss', 0) for holding in holdings)
         
         cash_balance = next((h['quantity'] for h in holdings if h['symbol'] == 'CASH'), 0)
         total_positions = len([h for h in holdings if h['symbol'] != 'CASH' and h['quantity'] != 0])
@@ -131,6 +137,7 @@ def calculate_portfolio_totals(user_id: str):
             'total_cost_basis': total_cost_basis,
             'total_gain_loss': total_gain_loss,
             'total_gain_loss_percent': total_gain_loss_percent,
+            'total_realized_gain_loss': total_realized_gain_loss,
             'cash_balance': cash_balance,
             'total_positions': total_positions,
             'holdings_count': len(holdings)
@@ -201,3 +208,23 @@ def clean_zero_holdings(user_id: str):
     except Exception as e:
         logger.error(f"Error cleaning zero holdings: {e}")
         # Don't raise exception - cleanup is not critical 
+
+def get_total_realized_gain_loss(user_id: str, symbol: str):
+    """Get total realized gain/loss for a specific symbol"""
+    try:
+        client = get_supabase_client()
+        response = client.table('transactions')\
+            .select('realized_gain_loss')\
+            .eq('user_id', user_id)\
+            .eq('symbol', symbol)\
+            .eq('transaction_type', 'SELL')\
+            .execute()
+        
+        if not response.data:
+            return Decimal('0')
+        
+        total_gain_loss = sum(Decimal(str(tx['realized_gain_loss'])) for tx in response.data)
+        return total_gain_loss
+    except Exception as e:
+        logger.error(f"Error getting total realized gain/loss for {symbol}: {e}")
+        return Decimal('0') 
