@@ -114,4 +114,16 @@ export class PortfolioService {
     });
     }
 
+  getWatchlist(): Observable<{ watchlist: string[] }> {
+    return this.http.get<{ watchlist: string[] }>(`${this.host}/watchlist/${this.userID}`, this.httpOptions);
+  }
+
+  addToWatchlist(symbol: string): Observable<any> {
+    return this.http.post(`${this.host}/watchlist/${this.userID}`, { symbol }, this.httpOptions);
+  }
+
+  removeFromWatchlist(symbol: string): Observable<any> {
+    return this.http.delete(`${this.host}/watchlist/${this.userID}/${symbol}`, this.httpOptions);
+  }
+
 }
