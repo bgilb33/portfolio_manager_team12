@@ -25,8 +25,8 @@ export class HoldingsComponent {
         this.holdings = data.holdings.filter(holding => 
           holding.quantity > 0 && holding.symbol !== 'CASH'
         );
-        this.cashBalance = data.portfolio_summary.cash_balance;
-        this.totalMarketValue = data.portfolio_summary.total_market_value;
+        this.cashBalance = data.summary.cash_balance;
+        this.totalMarketValue = data.summary.total_market_value;
         if (this.holdings.length > 0) {
           this.selectedHolding = this.holdings[0];
         } else {

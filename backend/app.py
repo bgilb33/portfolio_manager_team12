@@ -212,7 +212,8 @@ def get_transaction(user_id, transaction_id):
 def search_market_symbols(query):
     """Search for stock symbols (for adding to portfolio)"""
     try:
-        results = search_symbols(query)
+        fuzzy = request.args.get('fuzzy', 'true').lower() == 'true'
+        results = search_symbols(query, fuzzy=fuzzy)
         return jsonify({'results': results})
     except Exception as e:
         logger.error(f"Error in search_symbols: {e}")

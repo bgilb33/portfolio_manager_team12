@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData } from '../models/portfolio.model';
+import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData, StockSearchResult } from '../models/portfolio.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupabaseService } from './supabase.service';
 
@@ -66,6 +66,10 @@ export class PortfolioService {
 
   getStockPrice(ticker: string): Observable<PriceDataResponse> {
     return this.http.get<PriceDataResponse>(`${this.host}/market/price/${ticker}`);
+  }
+
+  searchStocks(query: string): Observable<{results: StockSearchResult[]}> {
+    return this.http.get<{results: StockSearchResult[]}>(`${this.host}/market/search/${query}?fuzzy=true`);
   }
 
   createTransaction(transaction: TransactionRequest): Observable<TransactionResponse> {
