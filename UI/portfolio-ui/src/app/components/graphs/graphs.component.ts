@@ -47,7 +47,7 @@ export class GraphsComponent implements OnInit {
     chart: { type: 'pie'},
     labels: [],
     responsive: [],
-    title: {}
+    title: {},
   }
 
   chartData: ChartData | null = null;

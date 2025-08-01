@@ -36,7 +36,6 @@ export class HoldingsComponent {
           this.selectedHolding = null;
         }
       }
-      console.log(this.portfolio);
     })
   }
 
