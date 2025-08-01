@@ -40,7 +40,7 @@
       class="flex justify-between px-3 py-2 border-b border-gray-300 cursor-pointer"
     >
       <div class="font-medium text-gray-700">{{ h.symbol }}</div>
-      <div class="font-semibold text-gray-800">{{ h.average_cost * h.quantity | currency:'USD':'symbol':'1.2-2' }}</div>
+      <div class="font-semibold text-gray-800">{{ h.current_price | currency:'USD':'symbol':'1.2-2' }}</div>
     </div>
   </div>
 
