@@ -265,6 +265,62 @@ def refresh_portfolio_prices(user_id):
         logger.error(f"Error in refresh_prices: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/market/sectors/update/<user_id>', methods=['POST'])
+def update_sector_info(user_id):
+    """Update sector information for user's holdings that don't have sector data"""
+    try:
+        from services.holdings_service import get_user_symbols
+        from services.market_service import fetch_sector_info
+        from utils.database import get_supabase_client
+        
+        # Get user's symbols (excluding CASH)
+        symbols = get_user_symbols(user_id)
+        
+        if not symbols:
+            return jsonify({
+                'message': 'No symbols to update sector info for',
+                'updated_count': 0
+            })
+        
+        client = get_supabase_client()
+        updated_count = 0
+        failed_symbols = []
+        
+        for symbol in symbols:
+            try:
+                # Check if asset already has sector info
+                asset_response = client.table('assets').select('sector').eq('symbol', symbol).execute()
+                
+                if asset_response.data and not asset_response.data[0].get('sector'):
+                    # Fetch sector info from yfinance
+                    sector_info = fetch_sector_info(symbol)
+                    
+                    if sector_info.get('sector'):
+                        # Update asset with sector information
+                        client.table('assets').update({
+                            'sector': sector_info['sector'],
+                            'name': sector_info.get('name', symbol)
+                        }).eq('symbol', symbol).execute()
+                        
+                        updated_count += 1
+                        logger.info(f"Updated sector info for {symbol}: {sector_info['sector']}")
+                    else:
+                        failed_symbols.append(symbol)
+                        
+            except Exception as e:
+                logger.error(f"Error updating sector info for {symbol}: {e}")
+                failed_symbols.append(symbol)
+        
+        return jsonify({
+            'message': f'Updated sector info for {updated_count} symbols',
+            'updated_count': updated_count,
+            'failed_symbols': failed_symbols,
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        })
+    except Exception as e:
+        logger.error(f"Error in update_sector_info: {e}")
+        return jsonify({'error': str(e)}), 500
+
 # PORTFOLIO ANALYTICS ENDPOINTS
 
 @app.route('/api/performance/<user_id>', methods=['GET'])

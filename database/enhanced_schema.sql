@@ -9,6 +9,7 @@ CREATE TABLE assets (
     symbol VARCHAR(20) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     asset_type VARCHAR(20) CHECK (asset_type IN ('STOCK', 'CASH')) NOT NULL,
+    sector VARCHAR(100),
     currency VARCHAR(3) DEFAULT 'USD',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
