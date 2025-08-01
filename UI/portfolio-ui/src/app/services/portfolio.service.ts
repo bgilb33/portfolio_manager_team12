@@ -99,7 +99,6 @@ export class PortfolioService {
     indices.forEach(index => {
         this.getStockPrice(index.symbol).subscribe({
             next: (response: PriceDataResponse) => {
-                console.log(response);
                 const data = response.price_data;
                 symbols.push({
                     current_price: data.current_price,
