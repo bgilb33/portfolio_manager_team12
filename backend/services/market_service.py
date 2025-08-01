@@ -253,6 +253,29 @@ def get_market_status():
             'last_updated': datetime.now(timezone.utc).isoformat()
         }
 
+def fetch_sector_info(symbol: str):
+    """Fetch sector information from yfinance for a given symbol"""
+    try:
+        symbol = validate_stock_symbol(symbol)
+        ticker = yf.Ticker(symbol)
+        info = ticker.info
+        
+        # Extract sector information
+        sector = info.get("sector")
+        
+        return {
+            'symbol': symbol,
+            'sector': sector,
+            'name': info.get('longName', info.get('shortName', symbol))
+        }
+    except Exception as e:
+        logger.error(f"Error fetching sector info for {symbol}: {e}")
+        return {
+            'symbol': symbol,
+            'sector': None,
+            'name': symbol
+        }
+
 # Portfolio-focused historical data functions
 
 def store_portfolio_snapshot(user_id: str, portfolio_value: float, date: str = None):

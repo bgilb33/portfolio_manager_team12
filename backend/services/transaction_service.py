@@ -359,15 +359,24 @@ def update_holding_for_sell(user_id: str, symbol: str, quantity: Decimal):
             current_qty = Decimal(str(existing.data[0]['quantity']))
             new_qty = current_qty - quantity
             
-            # Update quantity (can go negative)
-            client.table('holdings')\
-                .update({
-                    'quantity': float(new_qty),
-                    'updated_at': datetime.now(timezone.utc).isoformat()
-                })\
-                .eq('user_id', user_id)\
-                .eq('symbol', symbol)\
-                .execute()
+            # If quantity becomes 0 or negative, delete the holding record entirely
+            if new_qty <= 0:
+                client.table('holdings')\
+                    .delete()\
+                    .eq('user_id', user_id)\
+                    .eq('symbol', symbol)\
+                    .execute()
+                logger.info(f"Deleted holding for {symbol} (quantity became {new_qty})")
+            else:
+                # Update quantity if still positive
+                client.table('holdings')\
+                    .update({
+                        'quantity': float(new_qty),
+                        'updated_at': datetime.now(timezone.utc).isoformat()
+                    })\
+                    .eq('user_id', user_id)\
+                    .eq('symbol', symbol)\
+                    .execute()
         else:
             # Create negative holding if selling without previous holding
             client.table('holdings')\
