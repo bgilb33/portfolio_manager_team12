@@ -34,15 +34,16 @@ export class GraphsComponent implements OnInit {
     title: {}
   };
 
-  gainLossChartOptions: LineChartOptions = {
-    series: [],
-    chart: { type: 'line' },
-    xaxis: {},
-    yaxis: {},
-    title: {}
-  };
 
-  pieChartOptions: PieChartOptions = {
+  holdingsChartOptions: PieChartOptions = {
+    series: [],
+    chart: { type: 'pie'},
+    labels: [],
+    responsive: [],
+    title: {},
+  }
+
+  sectorChartOptions: PieChartOptions = {
     series: [],
     chart: { type: 'pie'},
     labels: [],
@@ -67,7 +68,7 @@ export class GraphsComponent implements OnInit {
       // Filter out holdings with zero quantity for the pie chart
       const activeHoldings = this.portfolio.holdings.filter(h => h.quantity > 0);
 
-      this.pieChartOptions = {
+      this.holdingsChartOptions = {
         series: activeHoldings.map(h => h.market_value),
         chart: {
           type: 'pie',
@@ -88,6 +89,37 @@ export class GraphsComponent implements OnInit {
           }
         ]
       };
+
+      const sectorMap = new Map<string, number>();
+      activeHoldings.forEach(holding => {
+        if (holding.symbol != "CASH") {
+          const current = sectorMap.get(holding.sector) || 0;
+          sectorMap.set(holding.sector, current + holding.market_value);
+        }
+      })
+
+      this.sectorChartOptions = {
+        series: Array.from(sectorMap.values()),
+        chart: {
+          type: 'pie',
+          height: '250px',
+          //width: '100%'
+        },
+        labels: Array.from(sectorMap.keys()),
+        title: {
+          text: 'Sector Allocation'
+        },
+        responsive: [
+          {
+            breakpoint: 480,
+            options: {
+              chart: { width: 300 },
+              legend: { position: 'bottom' }
+            }
+          }
+        ]
+      };
+
     });
 
     this.portfolioService.timeSeries$.subscribe(data => {
@@ -117,39 +149,6 @@ export class GraphsComponent implements OnInit {
           },
           title: {
             text: 'Portfolio Value Over Time'
-          },
-          xaxis: {
-            categories: dates
-          },
-          yaxis: {
-            labels: {
-              formatter: function (value: number) {
-                return '$' + value.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                });
-              }
-            }
-          }
-        };
-
-        this.gainLossChartOptions = {
-          series: [
-            {
-              name: 'Cumulative Change',
-              data: this.timeSeriesData.map(d => ({ x: d.date, y: d.cumulative_change }))
-            }
-          ],
-          chart: {
-            type: 'line',
-            height: '250px',
-            //width: '100%',
-            toolbar: {
-              show: false
-            }
-          },
-          title: {
-            text: 'Gain/Loss Over Time'
           },
           xaxis: {
             categories: dates

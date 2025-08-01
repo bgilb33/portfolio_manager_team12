@@ -11,21 +11,23 @@
 
   <div class="bg-white rounded-lg shadow-md p-4">
     <apx-chart
-      *ngIf="pieChartOptions"
-      [series]="pieChartOptions.series"
-      [chart]="pieChartOptions.chart"
-      [labels]="pieChartOptions.labels"
-      [responsive]="pieChartOptions.responsive"
-      [title]="pieChartOptions.title">
+      *ngIf="holdingsChartOptions"
+      [series]="holdingsChartOptions.series"
+      [chart]="holdingsChartOptions.chart"
+      [labels]="holdingsChartOptions.labels"
+      [responsive]="holdingsChartOptions.responsive"
+      [title]="holdingsChartOptions.title">
     </apx-chart>
   </div>
 
   <div class="bg-white rounded-lg shadow-md p-4">
     <apx-chart
-      [series]="gainLossChartOptions.series"
-      [chart]="gainLossChartOptions.chart"
-      [title]="gainLossChartOptions.title"
-      [xaxis]="gainLossChartOptions.xaxis">
+      *ngIf="sectorChartOptions"
+      [series]="sectorChartOptions.series"
+      [chart]="sectorChartOptions.chart"
+      [labels]="sectorChartOptions.labels"
+      [responsive]="sectorChartOptions.responsive"
+      [title]="sectorChartOptions.title">
     </apx-chart>
   </div>
 </div>

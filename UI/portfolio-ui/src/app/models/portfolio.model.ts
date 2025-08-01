@@ -35,7 +35,8 @@ export interface Holding {
   gain_loss: number,
   realized_gain_loss?: number,
   day_change?: number,
-  day_change_percent?: number
+  day_change_percent?: number,
+  sector: string
 }
 
 export interface PortfolioData {
