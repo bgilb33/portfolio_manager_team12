@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PortfolioService } from '../../services/portfolio.service';
-import { PortfolioData, PriceData, TransactionRequest, Transaction, CashRequest } from '../../models/portfolio.model';
+import { PortfolioData, PriceData, TransactionRequest, Transaction, CashRequest, StockSearchResult } from '../../models/portfolio.model';
 
 @Component({
   selector: 'app-transactions',
@@ -15,6 +15,7 @@ export class TransactionsComponent implements OnInit {
   searchError: boolean = false;
 
   searchQuery: string = '';
+  searchResults: StockSearchResult[] = [];
   tradeType: string = '';
   quantity: number | null = null;
   showConfirmationModal: boolean = false;
@@ -46,6 +47,34 @@ export class TransactionsComponent implements OnInit {
         })
       }
     })
+  }
+
+  onSearchChange(): void {
+    if (this.searchQuery.length > 1) {
+      this.portfolioService.searchStocks(this.searchQuery).subscribe(data => {
+        this.searchResults = data.results;
+      });
+    } else {
+      this.searchResults = [];
+    }
+  }
+
+  selectStock(stock: StockSearchResult): void {
+    this.searchQuery = stock.symbol;
+    this.searchResults = [];
+    this.portfolioService.getStockPrice(stock.symbol).subscribe({
+      next: (data) => {
+        if (data && data.price_data) {
+          this.current_stock = data.price_data;
+          this.searchError = false;
+        } else {
+          this.triggerSearchError();
+        }
+      },
+      error: () => {
+        this.triggerSearchError();
+      }
+    });
   }
 
   searchStock(): void {
@@ -197,13 +226,13 @@ export class TransactionsComponent implements OnInit {
   }
 
   formatPrice(value: number | undefined | null): string {
-    return value != null ? `$${value.toFixed(2)}` : 'N/A';
+    return value != null ? `${value.toFixed(2)}` : 'N/A';
   }
 
   formatTotal(): string {
     if (!this.current_stock || !this.quantity) return 'N/A';
     const total = this.current_stock.current_price * this.quantity;
-    return `$${total.toFixed(2)}`;
+    return `${total.toFixed(2)}`;
   }
 
   openTransactionModal(): void {
