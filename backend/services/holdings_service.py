@@ -37,6 +37,10 @@ def get_user_holdings(user_id: str):
                 price_data = get_cached_price(symbol)
                 current_price = Decimal(str(price_data.get('current_price', 0))) if price_data else Decimal('0')
                 
+                # Get company name from assets table
+                asset_data = get_asset_info(symbol)
+                company_name = asset_data.get('name', symbol) if asset_data else symbol
+                
                 # Calculate values using USER'S cost basis vs CURRENT market price
                 market_value = quantity * current_price
                 total_cost = quantity * average_cost  # USER'S actual cost basis
@@ -45,7 +49,7 @@ def get_user_holdings(user_id: str):
                 
                 holdings.append({
                     'symbol': symbol,
-                    'name': price_data.get('name', symbol) if price_data else symbol,
+                    'name': company_name,
                     'quantity': float(quantity),
                     'average_cost': float(average_cost),  # USER'S cost basis
                     'current_price': float(current_price),  # From market cache
@@ -61,6 +65,21 @@ def get_user_holdings(user_id: str):
     except Exception as e:
         logger.error(f"Error getting user holdings: {e}")
         return []
+
+def get_asset_info(symbol: str):
+    """Get asset information from assets table"""
+    try:
+        client = get_supabase_client()
+        response = client.table('assets')\
+            .select('*')\
+            .eq('symbol', symbol)\
+            .single()\
+            .execute()
+        
+        return response.data if response.data else None
+    except Exception as e:
+        logger.error(f"Error getting asset info for {symbol}: {e}")
+        return None
 
 def get_holding_by_symbol(user_id: str, symbol: str):
     """Get a specific holding by symbol"""
