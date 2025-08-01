@@ -14,6 +14,63 @@ from utils.validators import (
 
 logger = logging.getLogger(__name__)
 
+def validate_buy_transaction(user_id: str, quantity: Decimal, price: Decimal):
+    """Validate buy transaction - ensure user has sufficient cash"""
+    try:
+        client = get_supabase_client()
+        
+        # Get user's cash balance
+        cash_holding = client.table('holdings')\
+            .select('quantity')\
+            .eq('user_id', user_id)\
+            .eq('symbol', 'CASH')\
+            .single()\
+            .execute()
+        
+        available_cash = Decimal(str(cash_holding.data['quantity'])) if cash_holding.data else Decimal('0')
+        required_cash = quantity * price
+        
+        if required_cash > available_cash:
+            raise ValueError(f"Insufficient cash. Available: ${available_cash:.2f}, Required: ${required_cash:.2f}")
+        
+        return True
+    except ValueError as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error validating buy transaction: {e}")
+        raise Exception("Failed to validate buy transaction")
+
+def validate_sell_transaction(user_id: str, symbol: str, quantity: Decimal):
+    """Validate sell transaction - ensure user owns sufficient quantity"""
+    try:
+        client = get_supabase_client()
+        
+        # Get user's current holding for this symbol
+        holding = client.table('holdings')\
+            .select('quantity')\
+            .eq('user_id', user_id)\
+            .eq('symbol', symbol)\
+            .single()\
+            .execute()
+        
+        if not holding.data:
+            raise ValueError(f"You don't own any shares of {symbol}")
+        
+        owned_quantity = Decimal(str(holding.data['quantity']))
+        
+        if owned_quantity <= 0:
+            raise ValueError(f"You don't own any shares of {symbol}")
+        
+        if quantity > owned_quantity:
+            raise ValueError(f"Insufficient shares. Owned: {owned_quantity}, Trying to sell: {quantity}")
+        
+        return True
+    except ValueError as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error validating sell transaction: {e}")
+        raise Exception("Failed to validate sell transaction")
+
 def get_transaction_history(user_id: str, limit: int = 50, offset: int = 0):
     """Get transaction history for a user"""
     try:
@@ -58,6 +115,9 @@ def process_buy_transaction(user_id: str, symbol: str, quantity: Decimal, price:
         quantity = validate_positive_number(quantity, "quantity")
         price = validate_positive_number(price, "price")
         
+        # Validate cash balance for buy transaction
+        validate_buy_transaction(user_id, quantity, price)
+        
         # Ensure asset exists in assets table
         from services.holdings_service import add_new_asset_if_needed
         add_new_asset_if_needed(symbol)
@@ -96,6 +156,9 @@ def process_sell_transaction(user_id: str, symbol: str, quantity: Decimal, price
         symbol = validate_stock_symbol(symbol)
         quantity = validate_positive_number(quantity, "quantity")
         price = validate_positive_number(price, "price")
+        
+        # Validate holdings quantity for sell transaction
+        validate_sell_transaction(user_id, symbol, quantity)
         
         # Ensure asset exists in assets table
         from services.holdings_service import add_new_asset_if_needed
@@ -383,3 +446,35 @@ def create_transaction_record(user_id: str, symbol: str, transaction_type: str,
     except Exception as e:
         logger.error(f"Error creating transaction record: {e}")
         raise Exception("Failed to create transaction record") 
+
+def get_user_cash_balance(user_id: str):
+    """Get user's current cash balance"""
+    try:
+        client = get_supabase_client()
+        cash_holding = client.table('holdings')\
+            .select('quantity')\
+            .eq('user_id', user_id)\
+            .eq('symbol', 'CASH')\
+            .single()\
+            .execute()
+        
+        return float(cash_holding.data['quantity']) if cash_holding.data else 0.0
+    except Exception as e:
+        logger.error(f"Error getting cash balance: {e}")
+        return 0.0
+
+def get_user_holding_quantity(user_id: str, symbol: str):
+    """Get user's current quantity for a specific symbol"""
+    try:
+        client = get_supabase_client()
+        holding = client.table('holdings')\
+            .select('quantity')\
+            .eq('user_id', user_id)\
+            .eq('symbol', symbol)\
+            .single()\
+            .execute()
+        
+        return float(holding.data['quantity']) if holding.data else 0.0
+    except Exception as e:
+        logger.error(f"Error getting holding quantity for {symbol}: {e}")
+        return 0.0 

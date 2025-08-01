@@ -16,7 +16,7 @@ from services.portfolio_service import (
 from services.holdings_service import get_user_holdings, get_user_symbols
 from services.transaction_service import (
     get_transaction_history, process_transaction,
-    get_transaction_by_id
+    get_transaction_by_id, get_user_cash_balance, get_user_holding_quantity
 )
 from services.market_service import (
     search_symbols, get_current_price, refresh_all_prices,
@@ -206,6 +206,26 @@ def get_transaction(user_id, transaction_id):
         logger.error(f"Error in get_transaction: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/transactions/<user_id>/cash-balance', methods=['GET'])
+def get_cash_balance(user_id):
+    """Get user's current cash balance for validation"""
+    try:
+        cash_balance = get_user_cash_balance(user_id)
+        return jsonify({'cash_balance': cash_balance})
+    except Exception as e:
+        logger.error(f"Error in get_cash_balance: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/transactions/<user_id>/holding/<symbol>', methods=['GET'])
+def get_holding_quantity(user_id, symbol):
+    """Get user's current quantity for a specific symbol for validation"""
+    try:
+        quantity = get_user_holding_quantity(user_id, symbol)
+        return jsonify({'symbol': symbol, 'quantity': quantity})
+    except Exception as e:
+        logger.error(f"Error in get_holding_quantity: {e}")
+        return jsonify({'error': str(e)}), 500
+
 # MARKET DATA ENDPOINTS (PORTFOLIO-FOCUSED)
 
 @app.route('/api/market/search/<query>', methods=['GET'])
@@ -223,8 +243,8 @@ def search_market_symbols(query):
 def get_symbol_price(symbol):
     """Get current price for a symbol (for adding to portfolio)"""
     try:
-        # This calls yfinance for current price
-        price_data = get_current_price(symbol)
+        # This calls yfinance for current price - force fresh data for transactions
+        price_data = get_current_price(symbol, force_fresh=True)
         return jsonify({'price_data': price_data})
     except Exception as e:
         logger.error(f"Error in get_symbol_price: {e}")
