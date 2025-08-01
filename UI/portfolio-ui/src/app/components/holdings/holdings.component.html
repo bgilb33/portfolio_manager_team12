@@ -1,8 +1,15 @@
-<div class="flex flex-col h-full p-4 bg-gray-100">
-  <div class="flex items-center justify-center h-16 mb-4 bg-gray-300 rounded">
+<div class="flex flex-col h-full p-4">
+  <div class="relative flex items-center justify-center h-16 mb-4 bg-gray-300 rounded">
     <h1 class="text-xl font-semibold text-gray-800">Holdings</h1>
+    <button
+      (click)="refresh()"
+      class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition shadow"
+      title="Refresh holdings"
+    >
+      <i class="fa fa-refresh text-gray-700 text-lg"></i>
+    </button>
   </div>
-
+  
   <div class="flex flex-col gap-2 px-2 mb-4">
     <div class="flex justify-between font-semibold text-gray-700">
       <span>Net Worth:</span>

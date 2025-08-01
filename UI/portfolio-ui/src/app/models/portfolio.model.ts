@@ -127,3 +127,8 @@ export interface PriceDataResponse {
   price_data: PriceData
 }
 
+export interface RefreshResponse {
+  message: string,
+  updated_count: number,
+  timestamp: Date
+}

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData } from '../models/portfolio.model';
+import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData, RefreshResponse } from '../models/portfolio.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupabaseService } from './supabase.service';
 
@@ -13,7 +13,6 @@ export class PortfolioService {
 
   private timeSerisSubject = new BehaviorSubject<ChartData | null>(null);
   timeSeries$ = this.timeSerisSubject.asObservable();
-
 
   private userIdReady = new BehaviorSubject<boolean>(false);
   userIdReady$ = this.userIdReady.asObservable();
@@ -73,9 +72,13 @@ export class PortfolioService {
   }
 
   createCashTransaction(transaction: CashRequest): Observable<TransactionResponse> {
-    console.log("CALLING")
     return this.http.post<TransactionResponse>(`${this.host}/transactions/${this.userID}`, transaction, this.httpOptions);
   }
+
+  refreshHoldings(): Observable<RefreshResponse> {
+    return this.http.post<RefreshResponse>(`${this.host}/market/prices/refresh/${this.userID}`, {}, this.httpOptions);
+  }
+
   getMajorIndices(): void {
     const indices = [
         { symbol: '^GSPC', name: 'S&P 500' },
