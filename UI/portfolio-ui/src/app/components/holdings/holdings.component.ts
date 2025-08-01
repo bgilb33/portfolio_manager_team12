@@ -81,4 +81,13 @@ export class HoldingsComponent {
   selectStock(index: number): void {
     this.selectedHolding = this.holdings[index];
   }
+
+  refresh(): void {
+    this.portfolioService.refreshHoldings().subscribe(data => {
+      if (data) {
+        this.portfolioService.getPortfolio();
+        this.portfolioService.getTimeSeriesData();
+      }
+    })
+  }
 }
