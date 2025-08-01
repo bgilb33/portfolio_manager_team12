@@ -62,10 +62,16 @@ export class TransactionsComponent implements OnInit {
   selectStock(stock: StockSearchResult): void {
     this.searchQuery = stock.symbol;
     this.searchResults = [];
+    
+    // Use the stock data from search results to get fresh price and company name
     this.portfolioService.getStockPrice(stock.symbol).subscribe({
       next: (data) => {
         if (data && data.price_data) {
-          this.current_stock = data.price_data;
+          // Ensure we have the company name from the search result
+          this.current_stock = {
+            ...data.price_data,
+            name: stock.name || data.price_data.name
+          };
           this.searchError = false;
         } else {
           this.triggerSearchError();

@@ -118,7 +118,17 @@ def get_cached_price(symbol: str):
         response = client.table('market_prices').select('*').eq('symbol', symbol).execute()
         
         if response.data:
-            return response.data[0]
+            price_data = response.data[0]
+            
+            # Get company name from assets table
+            from services.holdings_service import get_asset_info
+            asset_info = get_asset_info(symbol)
+            if asset_info:
+                price_data['name'] = asset_info.get('name', symbol)
+            else:
+                price_data['name'] = symbol
+                
+            return price_data
         
         return None
     except Exception as e:
@@ -134,7 +144,7 @@ def cache_price(symbol: str, price_data: dict):
         from services.holdings_service import add_new_asset_if_needed
         add_new_asset_if_needed(symbol, price_data.get('name', symbol))
         
-        # Prepare data for database
+        # Prepare data for database (market_prices table doesn't have name column)
         cache_data = {
             'symbol': symbol,
             'current_price': price_data.get('current_price'),
@@ -153,9 +163,17 @@ def cache_price(symbol: str, price_data: dict):
         logger.error(f"Error caching price for {symbol}: {e}")
         return None
 
-def get_current_price(symbol: str):
+def get_current_price(symbol: str, force_fresh: bool = False):
     """Get current price for individual stock lookup (for adding to portfolio)"""
     try:
+        # If force_fresh is True, always fetch fresh data
+        if force_fresh:
+            price_data = fetch_current_price(symbol)
+            if price_data:
+                cache_price(symbol, price_data)
+                return price_data
+            return None
+        
         # Try cache first
         cached_price = get_cached_price(symbol)
         if cached_price:

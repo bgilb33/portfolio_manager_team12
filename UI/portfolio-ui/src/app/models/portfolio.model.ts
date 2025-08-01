@@ -121,7 +121,7 @@ export interface PriceData {
   day_change_percent: number,
   last_updated: Date,
   previous_close: number,
-  symbol: string
+  symbol: string,
   name?: string;
 }
 
