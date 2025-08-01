@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, tap } from 'rxjs';
 import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData, StockSearchResult, RefreshResponse } from '../models/portfolio.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupabaseService } from './supabase.service';
@@ -42,22 +42,25 @@ export class PortfolioService {
     })
   };
 
-  getPortfolio(): void {
-    this.http.get<PortfolioData>(`${this.host}/portfolio/${this.userID}`, this.httpOptions)
-      .subscribe((portfolio: PortfolioData) => {
+  getPortfolio(): Observable<PortfolioData> {
+    return this.http.get<PortfolioData>(`${this.host}/portfolio/${this.userID}`, this.httpOptions).pipe(
+      tap((portfolio: PortfolioData) => {
         this.portfolioSubject.next(portfolio);
-    });
+      })
+    );
   }
+
 
   // Set as a year for now, will make it changeable via UI later on
 
-  getTimeSeriesData(): void {
-    this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/1Y`, this.httpOptions)
-    .subscribe((chartData: ChartData) => {
-      console.log("CHART", chartData)
-      this.timeSerisSubject.next(chartData);
-    });
+  getTimeSeriesData(): Observable<ChartData> {
+    return this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/1Y`, this.httpOptions).pipe(
+      tap((chartData: ChartData) => {
+        this.timeSerisSubject.next(chartData);
+      })
+    );
   }
+
 
   getUserTransactions(): Observable<TransactionsResponse> {
     return this.http.get<TransactionsResponse>(`${this.host}/transactions/${this.userID}`, this.httpOptions);

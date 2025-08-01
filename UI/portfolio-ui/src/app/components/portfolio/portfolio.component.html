@@ -1,4 +1,8 @@
-<div class="dashboard-grid">
+<div *ngIf="isLoading" class="flex items-center justify-center h-full">
+  <div class="text-gray-600 text-lg animate-pulse">Loading your portfolio...</div>
+</div>
+
+<div class="dashboard-grid" *ngIf="!isLoading">
   <aside class="holdings bg-gray-100">
     <app-holdings></app-holdings>
   </aside>
