@@ -31,15 +31,17 @@ export interface Holding {
   current_price: number,
   market_value: number,
   total_cost: number,
-  gain_loss: number
+  gain_loss: number,
+  day_change?: number,
+  day_change_percent?: number
 }
 
 export interface PortfolioData {
-  portfolio_info: PortfolioInfo,
-  portfolio_summary: PortfolioSummary,
-  portfolio_performance: PortfolioPerformance,
-  holdings: Holding[]
+    portfolio: any; // Replace 'any' with a more specific type if you have one
+    holdings: Holding[];
+    summary: PortfolioSummary;
 }
+
 
 // Transactions
 
@@ -125,5 +127,23 @@ export interface PriceData {
 
 export interface PriceDataResponse {
   price_data: PriceData
+}
+
+
+export interface RefreshResponse {
+  message: string,
+  updated_count: number,
+  timestamp: Date
+}
+
+export interface StockSearchResult {
+    symbol: string;
+    name: string;
+    exchange: string;
+    type: string;
+    current_price?: number;
+    previous_close?: number;
+    day_change?: number;
+    day_change_percent?: number;
 }
 

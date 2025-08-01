@@ -73,9 +73,8 @@ def get_portfolio_details(user_id: str):
         
         # Combine all data into a single, unified object
         return {
-            'portfolio_info': portfolio,
-            'portfolio_summary': totals,
-            'portfolio_performance': performance,
+            'portfolio': portfolio,
+            'summary': totals,
             'holdings': holdings
         }
     except Exception as e:

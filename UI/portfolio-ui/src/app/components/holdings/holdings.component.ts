@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { PortfolioService } from '../../services/portfolio.service';
 import { Holding, PortfolioData } from '../../models/portfolio.model';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-holdings',
@@ -15,6 +16,8 @@ export class HoldingsComponent {
   totalMarketValue: number = 0;
   selectedHolding: Holding | null = null;
 
+  isRefreshing: boolean = false;
+
   constructor(private portfolioService: PortfolioService) { }
 
   ngOnInit(): void {
@@ -25,8 +28,8 @@ export class HoldingsComponent {
         this.holdings = data.holdings.filter(holding => 
           holding.quantity > 0 && holding.symbol !== 'CASH'
         );
-        this.cashBalance = data.portfolio_summary.cash_balance;
-        this.totalMarketValue = data.portfolio_summary.total_market_value;
+        this.cashBalance = data.summary.cash_balance;
+        this.totalMarketValue = data.summary.total_market_value;
         if (this.holdings.length > 0) {
           this.selectedHolding = this.holdings[0];
         } else {
@@ -80,5 +83,19 @@ export class HoldingsComponent {
 
   selectStock(index: number): void {
     this.selectedHolding = this.holdings[index];
+  }
+
+  refresh(): void {
+    this.isRefreshing = true;
+    this.portfolioService.refreshHoldings().subscribe(data => {
+      if (data) {
+        forkJoin([
+          this.portfolioService.getPortfolio(),
+          this.portfolioService.getTimeSeriesData()
+        ]).subscribe(() => {
+          this.isRefreshing = false;
+        });
+      }
+    })
   }
 }

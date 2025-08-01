@@ -11,25 +11,73 @@ from utils.validators import validate_stock_symbol
 
 logger = logging.getLogger(__name__)
 
-def search_symbols(query: str):
-    """Simple symbol search for adding stocks to portfolio"""
+def search_symbols(query: str, fuzzy: bool = True):
+    """
+    Search for stock symbols using yfinance with optional fuzzy search.
+    """
     try:
-        query = query.strip().upper()
         if not query:
             return []
+
+        # Use yfinance.Search with fuzzy matching enabled
+        search_instance = yf.Search(
+            query,
+            max_results=10,
+            enable_fuzzy_query=fuzzy,
+            news_count=0,  # Disable news to speed up
+        )
         
-        # Simple symbol validation using yfinance
-        ticker = yf.Ticker(query)
-        info = ticker.info
+        # Execute the search
+        results = search_instance.search()
         
-        if 'symbol' in info and info.get('symbol'):
-            return [{
-                'symbol': info.get('symbol'),
-                'name': info.get('longName', info.get('shortName', '')),
-                'currency': info.get('currency', 'USD')
-            }]
-        else:
-            return []
+        # Format results for the frontend with price information
+        formatted_results = []
+        for result in results.quotes:
+            symbol = result.get('symbol')
+            if symbol:
+                # Try to get current price and company name for the symbol
+                try:
+                    ticker = yf.Ticker(symbol)
+                    info = ticker.info
+                    
+                    current_price = info.get('currentPrice') or info.get('regularMarketPrice')
+                    previous_close = info.get('previousClose', current_price) if current_price else None
+                    
+                    # Get company name from ticker info
+                    company_name = info.get('longName') or info.get('shortName') or symbol
+                    
+                    if current_price:
+                        day_change = current_price - previous_close
+                        day_change_percent = (day_change / previous_close * 100) if previous_close else 0
+                    else:
+                        day_change = 0
+                        day_change_percent = 0
+                    
+                    formatted_results.append({
+                        'symbol': symbol,
+                        'name': company_name,
+                        'exchange': result.get('exchange'),
+                        'type': result.get('quoteType'),
+                        'current_price': current_price,
+                        'previous_close': previous_close,
+                        'day_change': day_change,
+                        'day_change_percent': day_change_percent,
+                    })
+                except Exception as e:
+                    # If price fetch fails, still include the symbol without price
+                    logger.warning(f"Could not fetch price for {symbol}: {e}")
+                    formatted_results.append({
+                        'symbol': symbol,
+                        'name': symbol,  # Fallback to symbol if we can't get company name
+                        'exchange': result.get('exchange'),
+                        'type': result.get('quoteType'),
+                        'current_price': None,
+                        'previous_close': None,
+                        'day_change': 0,
+                        'day_change_percent': 0,
+                    })
+        
+        return formatted_results
     except Exception as e:
         logger.error(f"Error searching for symbol {query}: {e}")
         return []
