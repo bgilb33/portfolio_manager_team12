@@ -1,5 +1,8 @@
-<div *ngIf="isLoading" class="flex items-center justify-center h-full">
-  <div class="text-gray-600 text-lg animate-pulse">Loading your portfolio...</div>
+<div *ngIf="isLoading" class="fixed inset-0 flex flex-col items-center justify-center bg-white z-50">
+  <i class="fa fa-circle-o-notch fa-spin text-4xl text-blue-600 mb-4"></i>
+  <div class="text-gray-700 text-lg font-medium animate-pulse">
+    Loading your portfolio...
+  </div>
 </div>
 
 <div class="dashboard-grid" *ngIf="!isLoading">
