@@ -6,7 +6,8 @@
       class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition shadow"
       title="Refresh holdings"
     >
-      <i class="fa fa-refresh text-gray-700 text-lg"></i>
+      <i *ngIf="!isRefreshing" class="fa fa-refresh text-gray-700 text-lg"></i>
+      <i *ngIf="isRefreshing" class="fa fa-refresh fa-spin text-gray-700 text-lg"></i>
     </button>
   </div>
   
