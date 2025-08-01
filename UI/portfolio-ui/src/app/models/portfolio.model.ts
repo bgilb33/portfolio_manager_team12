@@ -13,6 +13,7 @@ export interface PortfolioSummary {
   total_cost_basis: number,
   total_gain_loss: number,
   total_gain_loss_percent: number,
+  total_realized_gain_loss?: number,
   cash_balance: number,
   total_positions: number
 }
@@ -32,6 +33,7 @@ export interface Holding {
   market_value: number,
   total_cost: number,
   gain_loss: number,
+  realized_gain_loss?: number,
   day_change?: number,
   day_change_percent?: number
 }
