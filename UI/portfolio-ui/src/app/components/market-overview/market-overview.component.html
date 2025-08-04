@@ -1,15 +1,17 @@
-<div class="w-1/4 p-2 self-end">
-  <h2 class="text-sm font-semibold mb-2">Market Overview</h2>
-  <div *ngFor="let index of indices" class="mb-1 px-2 py-1 rounded-md shadow-sm border text-xs">
-    <h3 class="font-bold">{{ index.name }}</h3>
-    <p>{{ formatPrice(index.current_price) }}</p>
-    <p [ngClass]="index.day_change >= 0 ? 'text-green-600' : 'text-red-600'">
-      {{ index.day_change }} ({{ formatPercent(index.day_change_percent) }})
-    </p>
+<div class="flex h-[400px] overflow-hidden">
+  <div class=" w-1/4 p-2 overflow-y-auto">
+    <h2 class="text-sm font-semibold mb-2">Market Overview</h2>
+    <div *ngFor="let index of indices" class="mb-1 px-2 py-1 rounded-md shadow-sm border text-xs">
+      <h3 class="font-bold">{{ index.name }}</h3>
+      <p> ${{ formatNumber(index.current_price) }}</p>
+      <p [ngClass]="index.day_change >= 0 ? 'text-green-600' : 'text-red-600'">
+        ${{ formatNumber(index.day_change) }} ({{ formatPercent(index.day_change_percent) }})
+      </p>
+    </div>
   </div>
-</div>
-
-
-<div>
-  <app-watchlist></app-watchlist>
+  
+  
+  <div class="w-3/4">
+    <app-watchlist></app-watchlist>
+  </div>
 </div>
