@@ -23,8 +23,8 @@ export class MarketOverviewComponent {
     this.portfolioService.getMajorIndices();  // Initiates async price fetch
   }
 
-  formatPrice(value: number | string): string {
-    return typeof value === 'number' ? `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  formatNumber(value: number | string): string {
+    return typeof value === 'number' ? `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     : value;
   }
 

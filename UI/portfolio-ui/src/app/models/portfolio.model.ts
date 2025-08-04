@@ -150,3 +150,28 @@ export interface StockSearchResult {
     day_change_percent?: number;
 }
 
+export interface WatchlistData{
+  fiftyTwoWeekHigh: number;
+  fiftyTwoWeekLow: number;
+  high: number;
+  low: number;
+  marketCap: number;
+  name: string;
+  open: number;
+  previousClose: number;
+  recommendations: Recommendation[];
+  symbol: string;
+}
+
+export interface WatchlistDataResponse{
+  watchlist: WatchlistData[];
+}
+
+export interface Recommendation {
+  buy: number;
+  hold: number;
+  period: string;
+  sell: number;
+  strongBuy: number;
+  strongSell: number;
+}

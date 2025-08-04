@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, tap } from 'rxjs';
-import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData, StockSearchResult, RefreshResponse } from '../models/portfolio.model';
+import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData, StockSearchResult, RefreshResponse, WatchlistData, WatchlistDataResponse } from '../models/portfolio.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupabaseService } from './supabase.service';
 
@@ -19,6 +19,9 @@ export class PortfolioService {
 
   private marketSubject = new BehaviorSubject<PriceData [] | null>(null);
   marketView$ = this.marketSubject.asObservable();
+
+  private watchlistSubject = new BehaviorSubject<WatchlistData [] | null>(null);
+  watchlist$ = this.watchlistSubject.asObservable();
 
   host: string = "http://localhost:2000/api";
 
@@ -126,5 +129,21 @@ export class PortfolioService {
         });
     });
     }
+
+  getWatchlist(): Observable<WatchlistDataResponse> {
+    return this.http.get<WatchlistDataResponse>(`${this.host}/watchlist/${this.userID}`, this.httpOptions).pipe(
+      tap((res: WatchlistDataResponse) => {
+        this.watchlistSubject.next(res.watchlist);
+      })  
+    );
+  }
+
+  addToWatchlist(symbol: string): Observable<any> {
+    return this.http.post(`${this.host}/watchlist/${this.userID}`, { symbol }, this.httpOptions);
+  }
+
+  removeFromWatchlist(symbol: string): Observable<any> {
+    return this.http.delete(`${this.host}/watchlist/${this.userID}/${symbol}`, this.httpOptions);
+  }
 
 }
