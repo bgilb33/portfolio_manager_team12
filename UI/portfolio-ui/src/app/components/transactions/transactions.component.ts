@@ -36,14 +36,12 @@ export class TransactionsComponent implements OnInit {
   ngOnInit(): void {
     this.portfolioService.portfolio$.subscribe(data => {
       this.portfolio = data;
-      console.log(data);
     })
 
     this.portfolioService.userIdReady$.subscribe(ready => {
       if (ready) {
         this.portfolioService.getUserTransactions().subscribe(data => {
           this.transactions = data.transactions;
-          console.log(this.transactions);
         })
       }
     })
@@ -62,10 +60,16 @@ export class TransactionsComponent implements OnInit {
   selectStock(stock: StockSearchResult): void {
     this.searchQuery = stock.symbol;
     this.searchResults = [];
+    
+    // Use the stock data from search results to get fresh price and company name
     this.portfolioService.getStockPrice(stock.symbol).subscribe({
       next: (data) => {
         if (data && data.price_data) {
-          this.current_stock = data.price_data;
+          // Ensure we have the company name from the search result
+          this.current_stock = {
+            ...data.price_data,
+            name: stock.name || data.price_data.name
+          };
           this.searchError = false;
         } else {
           this.triggerSearchError();
@@ -122,17 +126,7 @@ export class TransactionsComponent implements OnInit {
 
       this.portfolioService.createTransaction(transactionRequest).subscribe({
         next: (data) => {
-          console.log("Trade Data:", data);
-          if (data.transaction.id != null) {
-            this.statusMessage = 'Trade submitted successfully.';
-            this.statusType = 'success';
-            this.portfolioService.getPortfolio();
-            this.portfolioService.getTimeSeriesData();
-          }
-          else {
-            this.statusMessage = 'Trade failed. Please try again.';
-            this.statusType = 'error';
-          }
+          this.displayTradeResult(data.transaction.id != null);
         },
         error: (error) => {
           console.error("Trade Error:", error);
@@ -146,6 +140,10 @@ export class TransactionsComponent implements OnInit {
             this.statusMessage = 'Trade failed. Please try again.';
           }
           this.statusType = 'error';
+          setTimeout(() => {
+            this.statusMessage = '';
+            this.statusType = '';
+          }, 5000);
         }
       })
     }
@@ -155,6 +153,40 @@ export class TransactionsComponent implements OnInit {
     this.current_stock = null;
     this.tradeType = '';
     this.quantity = null;
+  }
+
+  displayTradeResult(success: boolean) {
+    if (success) {
+      this.statusMessage = 'Trade submitted successfully.';
+      this.statusType = 'success';
+      this.portfolioService.getPortfolio().subscribe();
+      this.portfolioService.getTimeSeriesData().subscribe();
+      
+      // Update sector information for new stocks
+      this.portfolioService.updateSectorInfo().subscribe({
+        next: (response) => {
+          console.log('Sector info updated:', response);
+          // Refresh portfolio again to get updated sector data
+          this.portfolioService.getPortfolio().subscribe();
+        },
+        error: (error) => {
+          console.error('Failed to update sector info:', error);
+        }
+      });
+      
+      setTimeout(() => {
+        this.statusMessage = '';
+        this.statusType = '';
+      }, 5000);
+    }
+    else {
+      this.statusType = 'error';
+      this.statusMessage = 'Trade failed. Please try again.';
+      setTimeout(() => {
+        this.statusMessage = '';
+        this.statusType = '';
+      }, 5000);
+    }
   }
 
   cancelTrade(): void {
@@ -186,11 +218,10 @@ export class TransactionsComponent implements OnInit {
 
       this.portfolioService.createCashTransaction(transactionRequest).subscribe({
         next: (data) => {
-          console.log("CASH:", data);
           if (data.transaction.id != null) {
             this.cashStatusMessage = 'Transaction submitted successfully.';
             this.cashStatusType = 'success';
-            this.portfolioService.getPortfolio();
+            this.portfolioService.getPortfolio().subscribe();
           }
           else {
             this.cashStatusMessage = 'Trade failed. Please try again.';

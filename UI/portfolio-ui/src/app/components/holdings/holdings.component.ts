@@ -36,7 +36,6 @@ export class HoldingsComponent {
           this.selectedHolding = null;
         }
       }
-      console.log(this.portfolio);
     })
   }
 
@@ -75,6 +74,10 @@ export class HoldingsComponent {
     const stocksAtCost = this.getStocksAtCost();
     const cash = this.getCash();
     return netWorth - (stocksAtCost + cash);
+  }
+
+  getRealizedGainLoss(): number {
+    return this.portfolio?.summary.total_realized_gain_loss || 0;
   }
 
   getTotalInvested(holding: Holding): number {

@@ -18,6 +18,9 @@ def get_user_holdings(user_id: str):
             quantity = Decimal(str(holding['quantity']))
             average_cost = Decimal(str(holding['average_cost']))
             
+            # Get total realized gain/loss for this holding
+            realized_gain_loss_total = get_total_realized_gain_loss(user_id, symbol)
+
             if symbol == 'CASH':
                 holdings.append({
                     'symbol': symbol,
@@ -30,16 +33,19 @@ def get_user_holdings(user_id: str):
                     'gain_loss': 0.0,
                     'gain_loss_percent': 0.0,
                     'day_change': 0.0,
-                    'day_change_percent': 0.0
+                    'day_change_percent': 0.0,
+                    'realized_gain_loss': 0.0,
+                    'sector': None
                 })
             else:
                 # Get current price from CACHED market_prices table (no yfinance call)
                 price_data = get_cached_price(symbol)
                 current_price = Decimal(str(price_data.get('current_price', 0))) if price_data else Decimal('0')
                 
-                # Get company name from assets table
+                # Get company name and sector from assets table
                 asset_data = get_asset_info(symbol)
                 company_name = asset_data.get('name', symbol) if asset_data else symbol
+                sector = asset_data.get('sector') if asset_data else None
                 
                 # Calculate values using USER'S cost basis vs CURRENT market price
                 market_value = quantity * current_price
@@ -58,7 +64,9 @@ def get_user_holdings(user_id: str):
                     'gain_loss': float(gain_loss),
                     'gain_loss_percent': float(gain_loss_percent),
                     'day_change': float(price_data.get('day_change', 0)) if price_data else 0.0,
-                    'day_change_percent': float(price_data.get('day_change_percent', 0)) if price_data else 0.0
+                    'day_change_percent': float(price_data.get('day_change_percent', 0)) if price_data else 0.0,
+                    'realized_gain_loss': float(realized_gain_loss_total),
+                    'sector': sector
                 })
         
         return holdings
@@ -105,7 +113,6 @@ def get_user_symbols(user_id: str):
             .select('symbol')\
             .eq('user_id', user_id)\
             .neq('symbol', 'CASH')\
-            .gt('quantity', 0)\
             .execute()
         
         return [holding['symbol'] for holding in response.data]
@@ -122,6 +129,8 @@ def calculate_portfolio_totals(user_id: str):
         total_cost_basis = sum(holding['total_cost'] for holding in holdings)
         total_gain_loss = total_market_value - total_cost_basis
         total_gain_loss_percent = (total_gain_loss / total_cost_basis * 100) if total_cost_basis != 0 else 0
+        # Use the new function to get total realized gain/loss across ALL transactions
+        total_realized_gain_loss = get_total_realized_gain_loss_for_user(user_id)
         
         cash_balance = next((h['quantity'] for h in holdings if h['symbol'] == 'CASH'), 0)
         total_positions = len([h for h in holdings if h['symbol'] != 'CASH' and h['quantity'] != 0])
@@ -131,6 +140,7 @@ def calculate_portfolio_totals(user_id: str):
             'total_cost_basis': total_cost_basis,
             'total_gain_loss': total_gain_loss,
             'total_gain_loss_percent': total_gain_loss_percent,
+            'total_realized_gain_loss': float(total_realized_gain_loss),
             'cash_balance': cash_balance,
             'total_positions': total_positions,
             'holdings_count': len(holdings)
@@ -155,7 +165,6 @@ def get_holdings_for_symbol_refresh(user_id: str):
             .select('symbol, quantity')\
             .eq('user_id', user_id)\
             .neq('symbol', 'CASH')\
-            .neq('quantity', 0)\
             .execute()
         
         return response.data
@@ -172,23 +181,45 @@ def add_new_asset_if_needed(symbol: str, name: str = None, asset_type: str = 'ST
         existing = client.table('assets').select('symbol').eq('symbol', symbol).execute()
         
         if not existing.data:
+            # For stocks, try to get sector information from yfinance
+            sector = None
+            
+            if asset_type == 'STOCK' and symbol != 'CASH':
+                try:
+                    from services.market_service import fetch_sector_info
+                    sector_info = fetch_sector_info(symbol)
+                    sector = sector_info.get("sector")
+                    # Use the name from yfinance if available
+                    if not name and sector_info.get('name'):
+                        name = sector_info.get('name')
+                except Exception as e:
+                    logger.warning(f"Could not fetch sector info for {symbol}: {e}")
+            
             # Add new asset
-            client.table('assets').insert({
+            asset_data = {
                 'symbol': symbol,
                 'name': name or symbol,
                 'asset_type': asset_type
-            }).execute()
+            }
             
-            logger.info(f"Added new asset: {symbol}")
+            # Add sector if available
+            if sector:
+                asset_data['sector'] = sector
+            
+            client.table('assets').insert(asset_data).execute()
+            
+            logger.info(f"Added new asset: {symbol} (sector: {sector})")
             
     except Exception as e:
         logger.error(f"Error adding asset {symbol}: {e}")
         # Don't raise exception - asset creation is not critical for transaction processing
 
 def clean_zero_holdings(user_id: str):
-    """Remove holdings with zero quantity (optional cleanup)"""
+    """Remove holdings with zero quantity (legacy cleanup - now handled during sell transactions)"""
     try:
         client = get_supabase_client()
+        # This function is now mostly for legacy data cleanup
+        # Zero holdings are now deleted immediately during sell transactions
         client.table('holdings')\
             .delete()\
             .eq('user_id', user_id)\
@@ -196,8 +227,55 @@ def clean_zero_holdings(user_id: str):
             .neq('symbol', 'CASH')\
             .execute()
         
-        logger.info(f"Cleaned zero holdings for user {user_id}")
+        logger.info(f"Cleaned legacy zero holdings for user {user_id}")
         
     except Exception as e:
         logger.error(f"Error cleaning zero holdings: {e}")
-        # Don't raise exception - cleanup is not critical 
+        # Don't raise exception - cleanup is not critical
+
+def get_total_realized_gain_loss(user_id: str, symbol: str):
+    """Get total realized gain/loss for a specific symbol"""
+    try:
+        client = get_supabase_client()
+        response = client.table('transactions')\
+            .select('realized_gain_loss')\
+            .eq('user_id', user_id)\
+            .eq('symbol', symbol)\
+            .eq('transaction_type', 'SELL')\
+            .execute()
+        
+        if not response.data:
+            return Decimal('0')
+        
+        # Calculate total realized gain/loss by summing all SELL transactions
+        total_gain_loss = Decimal('0')
+        for tx in response.data:
+            total_gain_loss += Decimal(str(tx['realized_gain_loss']))
+        
+        return total_gain_loss
+    except Exception as e:
+        logger.error(f"Error getting total realized gain/loss for {symbol}: {e}")
+        return Decimal('0')
+
+def get_total_realized_gain_loss_for_user(user_id: str):
+    """Get total realized gain/loss across ALL transactions for a user"""
+    try:
+        client = get_supabase_client()
+        response = client.table('transactions')\
+            .select('realized_gain_loss')\
+            .eq('user_id', user_id)\
+            .eq('transaction_type', 'SELL')\
+            .execute()
+        
+        if not response.data:
+            return Decimal('0')
+        
+        # Calculate total realized gain/loss by summing all SELL transactions
+        total_gain_loss = Decimal('0')
+        for tx in response.data:
+            total_gain_loss += Decimal(str(tx['realized_gain_loss']))
+        
+        return total_gain_loss
+    except Exception as e:
+        logger.error(f"Error getting total realized gain/loss for user {user_id}: {e}")
+        return Decimal('0') 

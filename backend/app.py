@@ -16,7 +16,7 @@ from services.portfolio_service import (
 from services.holdings_service import get_user_holdings, get_user_symbols
 from services.transaction_service import (
     get_transaction_history, process_transaction,
-    get_transaction_by_id
+    get_transaction_by_id, get_user_cash_balance, get_user_holding_quantity
 )
 from services.market_service import (
     search_symbols, get_current_price, refresh_all_prices,
@@ -206,6 +206,26 @@ def get_transaction(user_id, transaction_id):
         logger.error(f"Error in get_transaction: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/transactions/<user_id>/cash-balance', methods=['GET'])
+def get_cash_balance(user_id):
+    """Get user's current cash balance for validation"""
+    try:
+        cash_balance = get_user_cash_balance(user_id)
+        return jsonify({'cash_balance': cash_balance})
+    except Exception as e:
+        logger.error(f"Error in get_cash_balance: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/transactions/<user_id>/holding/<symbol>', methods=['GET'])
+def get_holding_quantity(user_id, symbol):
+    """Get user's current quantity for a specific symbol for validation"""
+    try:
+        quantity = get_user_holding_quantity(user_id, symbol)
+        return jsonify({'symbol': symbol, 'quantity': quantity})
+    except Exception as e:
+        logger.error(f"Error in get_holding_quantity: {e}")
+        return jsonify({'error': str(e)}), 500
+
 # MARKET DATA ENDPOINTS (PORTFOLIO-FOCUSED)
 
 @app.route('/api/market/search/<query>', methods=['GET'])
@@ -223,8 +243,8 @@ def search_market_symbols(query):
 def get_symbol_price(symbol):
     """Get current price for a symbol (for adding to portfolio)"""
     try:
-        # This calls yfinance for current price
-        price_data = get_current_price(symbol)
+        # This calls yfinance for current price - force fresh data for transactions
+        price_data = get_current_price(symbol, force_fresh=True)
         return jsonify({'price_data': price_data})
     except Exception as e:
         logger.error(f"Error in get_symbol_price: {e}")
@@ -243,6 +263,62 @@ def refresh_portfolio_prices(user_id):
         })
     except Exception as e:
         logger.error(f"Error in refresh_prices: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/market/sectors/update/<user_id>', methods=['POST'])
+def update_sector_info(user_id):
+    """Update sector information for user's holdings that don't have sector data"""
+    try:
+        from services.holdings_service import get_user_symbols
+        from services.market_service import fetch_sector_info
+        from utils.database import get_supabase_client
+        
+        # Get user's symbols (excluding CASH)
+        symbols = get_user_symbols(user_id)
+        
+        if not symbols:
+            return jsonify({
+                'message': 'No symbols to update sector info for',
+                'updated_count': 0
+            })
+        
+        client = get_supabase_client()
+        updated_count = 0
+        failed_symbols = []
+        
+        for symbol in symbols:
+            try:
+                # Check if asset already has sector info
+                asset_response = client.table('assets').select('sector').eq('symbol', symbol).execute()
+                
+                if asset_response.data and not asset_response.data[0].get('sector'):
+                    # Fetch sector info from yfinance
+                    sector_info = fetch_sector_info(symbol)
+                    
+                    if sector_info.get('sector'):
+                        # Update asset with sector information
+                        client.table('assets').update({
+                            'sector': sector_info['sector'],
+                            'name': sector_info.get('name', symbol)
+                        }).eq('symbol', symbol).execute()
+                        
+                        updated_count += 1
+                        logger.info(f"Updated sector info for {symbol}: {sector_info['sector']}")
+                    else:
+                        failed_symbols.append(symbol)
+                        
+            except Exception as e:
+                logger.error(f"Error updating sector info for {symbol}: {e}")
+                failed_symbols.append(symbol)
+        
+        return jsonify({
+            'message': f'Updated sector info for {updated_count} symbols',
+            'updated_count': updated_count,
+            'failed_symbols': failed_symbols,
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        })
+    except Exception as e:
+        logger.error(f"Error in update_sector_info: {e}")
         return jsonify({'error': str(e)}), 500
 
 # PORTFOLIO ANALYTICS ENDPOINTS
@@ -277,7 +353,8 @@ def get_portfolio_chart(user_id, period):
             '1M': 30,
             '3M': 90,
             '6M': 180,
-            '1Y': 365
+            '1Y': 365,
+            'MAX': 3650  # 10 years for MAX period
         }
         
         days = period_days.get(period, 30)

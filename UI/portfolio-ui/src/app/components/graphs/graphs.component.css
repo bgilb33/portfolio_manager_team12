@@ -39,3 +39,65 @@ apx-chart {
   display: block;
 }
  */
+
+.chart-container {
+  height: 100%;
+  width: 100%;
+}
+
+/* Time range button styles */
+.time-range-button {
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.time-range-button.active {
+  background-color: #2563eb;
+  color: white;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.time-range-button.active:hover {
+  background-color: #1d4ed8;
+}
+
+.time-range-button.inactive {
+  background-color: #f3f4f6;
+  color: #374151;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.time-range-button.inactive:hover {
+  background-color: #e5e7eb;
+}
+
+.time-range-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Chart title styling */
+.chart-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+/* Time range container */
+.time-range-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: #f9fafb;
+  padding: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}

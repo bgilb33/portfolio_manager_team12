@@ -1,6 +1,20 @@
-<div class="grid grid-cols-2 grid-rows-[305px_305px] gap-3 p-4 h-[calc(100%-10px)]">
+<div class="grid grid-cols-2 grid-rows-[350px_305px] gap-3 p-4 h-[calc(100%-10px)]">
 
   <div class="col-span-2 bg-white rounded-lg shadow-md p-4">
+    <!-- Time Range Selector -->
+    <div class="flex justify-end mb-2">
+      <div class="time-range-container">
+        <button 
+          *ngFor="let range of timeRanges" 
+          (click)="onPeriodChange(range.value)"
+          [class]="selectedPeriod === range.value 
+            ? 'time-range-button active' 
+            : 'time-range-button inactive'">
+          {{ range.label }}
+        </button>
+      </div>
+    </div>
+    
     <apx-chart
       [series]="portfolioValueChartOptions.series"
       [chart]="portfolioValueChartOptions.chart"
@@ -11,21 +25,22 @@
 
   <div class="bg-white rounded-lg shadow-md p-4">
     <apx-chart
-      *ngIf="pieChartOptions"
-      [series]="pieChartOptions.series"
-      [chart]="pieChartOptions.chart"
-      [labels]="pieChartOptions.labels"
-      [responsive]="pieChartOptions.responsive"
-      [title]="pieChartOptions.title">
+      *ngIf="holdingsChartOptions"
+      [series]="holdingsChartOptions.series"
+      [chart]="holdingsChartOptions.chart"
+      [labels]="holdingsChartOptions.labels"
+      [responsive]="holdingsChartOptions.responsive"
+      [title]="holdingsChartOptions.title">
     </apx-chart>
   </div>
 
   <div class="bg-white rounded-lg shadow-md p-4">
     <apx-chart
-      [series]="gainLossChartOptions.series"
-      [chart]="gainLossChartOptions.chart"
-      [title]="gainLossChartOptions.title"
-      [xaxis]="gainLossChartOptions.xaxis">
+      *ngIf="sectorChartOptions"
+      [series]="sectorChartOptions.series"
+      [chart]="sectorChartOptions.chart"
+      [responsive]="sectorChartOptions.responsive"
+      [title]="sectorChartOptions.title">
     </apx-chart>
   </div>
 </div>

@@ -53,8 +53,8 @@ export class PortfolioService {
 
   // Set as a year for now, will make it changeable via UI later on
 
-  getTimeSeriesData(): Observable<ChartData> {
-    return this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/1Y`, this.httpOptions).pipe(
+  getTimeSeriesData(period: string = '1Y'): Observable<ChartData> {
+    return this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/${period}`, this.httpOptions).pipe(
       tap((chartData: ChartData) => {
         this.timeSerisSubject.next(chartData);
       })
@@ -86,6 +86,10 @@ export class PortfolioService {
     return this.http.post<RefreshResponse>(`${this.host}/market/prices/refresh/${this.userID}`, {}, this.httpOptions);
   }
 
+  updateSectorInfo(): Observable<any> {
+    return this.http.post<any>(`${this.host}/market/sectors/update/${this.userID}`, {}, this.httpOptions);
+  }
+
   getMajorIndices(): void {
     const indices = [
         { symbol: '^GSPC', name: 'S&P 500' },
@@ -99,7 +103,6 @@ export class PortfolioService {
     indices.forEach(index => {
         this.getStockPrice(index.symbol).subscribe({
             next: (response: PriceDataResponse) => {
-                console.log(response);
                 const data = response.price_data;
                 symbols.push({
                     current_price: data.current_price,
