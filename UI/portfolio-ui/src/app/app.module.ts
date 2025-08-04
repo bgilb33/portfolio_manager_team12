@@ -6,6 +6,8 @@ import { FormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { AuthComponent } from './components/auth/auth.component';
+import { PortfolioComponent } from './components/portfolio/portfolio.component';
 import { HoldingsComponent } from './components/holdings/holdings.component';
 import { GraphsComponent } from './components/graphs/graphs.component';
 import { TransactionsComponent } from './components/transactions/transactions.component';
@@ -15,6 +17,8 @@ import { WatchlistComponent } from './components/watchlist/watchlist.component';
 @NgModule({
   declarations: [
     AppComponent,
+    AuthComponent,
+    PortfolioComponent,
     HoldingsComponent,
     GraphsComponent,
     TransactionsComponent,

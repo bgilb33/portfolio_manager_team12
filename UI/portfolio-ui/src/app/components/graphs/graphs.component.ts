@@ -82,7 +82,7 @@ export class GraphsComponent implements OnInit {
     { label: '1Y', value: '1Y' },
     { label: 'MAX', value: 'MAX' }
   ];
-  selectedPeriod: string = '1Y';
+  selectedPeriod: string = '1M';
 
   portfolio: PortfolioData | null = null;
 
