@@ -53,8 +53,8 @@ export class PortfolioService {
 
   // Set as a year for now, will make it changeable via UI later on
 
-  getTimeSeriesData(): Observable<ChartData> {
-    return this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/1Y`, this.httpOptions).pipe(
+  getTimeSeriesData(period: string = '1Y'): Observable<ChartData> {
+    return this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/${period}`, this.httpOptions).pipe(
       tap((chartData: ChartData) => {
         this.timeSerisSubject.next(chartData);
       })
@@ -84,6 +84,10 @@ export class PortfolioService {
 
   refreshHoldings(): Observable<RefreshResponse> {
     return this.http.post<RefreshResponse>(`${this.host}/market/prices/refresh/${this.userID}`, {}, this.httpOptions);
+  }
+
+  updateSectorInfo(): Observable<any> {
+    return this.http.post<any>(`${this.host}/market/sectors/update/${this.userID}`, {}, this.httpOptions);
   }
 
   getMajorIndices(): void {

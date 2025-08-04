@@ -353,7 +353,8 @@ def get_portfolio_chart(user_id, period):
             '1M': 30,
             '3M': 90,
             '6M': 180,
-            '1Y': 365
+            '1Y': 365,
+            'MAX': 3650  # 10 years for MAX period
         }
         
         days = period_days.get(period, 30)

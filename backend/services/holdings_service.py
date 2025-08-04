@@ -129,7 +129,8 @@ def calculate_portfolio_totals(user_id: str):
         total_cost_basis = sum(holding['total_cost'] for holding in holdings)
         total_gain_loss = total_market_value - total_cost_basis
         total_gain_loss_percent = (total_gain_loss / total_cost_basis * 100) if total_cost_basis != 0 else 0
-        total_realized_gain_loss = sum(holding.get('realized_gain_loss', 0) for holding in holdings)
+        # Use the new function to get total realized gain/loss across ALL transactions
+        total_realized_gain_loss = get_total_realized_gain_loss_for_user(user_id)
         
         cash_balance = next((h['quantity'] for h in holdings if h['symbol'] == 'CASH'), 0)
         total_positions = len([h for h in holdings if h['symbol'] != 'CASH' and h['quantity'] != 0])
@@ -139,7 +140,7 @@ def calculate_portfolio_totals(user_id: str):
             'total_cost_basis': total_cost_basis,
             'total_gain_loss': total_gain_loss,
             'total_gain_loss_percent': total_gain_loss_percent,
-            'total_realized_gain_loss': total_realized_gain_loss,
+            'total_realized_gain_loss': float(total_realized_gain_loss),
             'cash_balance': cash_balance,
             'total_positions': total_positions,
             'holdings_count': len(holdings)
@@ -246,8 +247,35 @@ def get_total_realized_gain_loss(user_id: str, symbol: str):
         if not response.data:
             return Decimal('0')
         
-        total_gain_loss = sum(Decimal(str(tx['realized_gain_loss'])) for tx in response.data)
+        # Calculate total realized gain/loss by summing all SELL transactions
+        total_gain_loss = Decimal('0')
+        for tx in response.data:
+            total_gain_loss += Decimal(str(tx['realized_gain_loss']))
+        
         return total_gain_loss
     except Exception as e:
         logger.error(f"Error getting total realized gain/loss for {symbol}: {e}")
+        return Decimal('0')
+
+def get_total_realized_gain_loss_for_user(user_id: str):
+    """Get total realized gain/loss across ALL transactions for a user"""
+    try:
+        client = get_supabase_client()
+        response = client.table('transactions')\
+            .select('realized_gain_loss')\
+            .eq('user_id', user_id)\
+            .eq('transaction_type', 'SELL')\
+            .execute()
+        
+        if not response.data:
+            return Decimal('0')
+        
+        # Calculate total realized gain/loss by summing all SELL transactions
+        total_gain_loss = Decimal('0')
+        for tx in response.data:
+            total_gain_loss += Decimal(str(tx['realized_gain_loss']))
+        
+        return total_gain_loss
+    except Exception as e:
+        logger.error(f"Error getting total realized gain/loss for user {user_id}: {e}")
         return Decimal('0') 

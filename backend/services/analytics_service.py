@@ -175,7 +175,8 @@ def calculate_portfolio_chart_data(user_id: str, period: str = '1M'):
             '1M': 30,
             '3M': 90,
             '6M': 180,
-            '1Y': 365
+            '1Y': 365,
+            'MAX': 3650  # 10 years for MAX period
         }
         
         days = period_days.get(period, 30)
@@ -204,7 +205,7 @@ def calculate_portfolio_chart_data(user_id: str, period: str = '1M'):
         return chart_data
     except Exception as e:
         logger.error(f"Error getting portfolio chart data: {e}")
-        return [] 
+        return []
 
 def calculate_historical_performance(user_id: str, days: int = 30):
     """Calculate historical performance using portfolio snapshots"""
