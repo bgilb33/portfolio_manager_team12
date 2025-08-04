@@ -10,8 +10,7 @@ import { HoldingsComponent } from './components/holdings/holdings.component';
 import { GraphsComponent } from './components/graphs/graphs.component';
 import { TransactionsComponent } from './components/transactions/transactions.component';
 import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
-import { PortfolioComponent } from './components/portfolio/portfolio.component';
-import { AuthComponent } from './components/auth/auth.component';
+import { WatchlistComponent } from './components/watchlist/watchlist.component';
 
 @NgModule({
   declarations: [
@@ -20,8 +19,7 @@ import { AuthComponent } from './components/auth/auth.component';
     GraphsComponent,
     TransactionsComponent,
     MarketOverviewComponent,
-    PortfolioComponent,
-    AuthComponent
+    WatchlistComponent
   ],
   imports: [
     BrowserModule,
