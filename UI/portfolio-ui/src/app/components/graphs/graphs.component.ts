@@ -122,18 +122,24 @@ export class GraphsComponent implements OnInit {
         ]
       };
 
-      const sectorMap = new Map<string, number>();
+      const sectorMap = new Map<string, { totalValue: number, totalDayChange: number, count: number }>();
       activeHoldings.forEach(holding => {
         if (holding.symbol != "CASH") {
-          console.log(`Processing holding: ${holding.symbol}, sector: ${holding.sector}, market_value: ${holding.market_value}`);
+          console.log(`Processing holding: ${holding.symbol}, sector: ${holding.sector}, market_value: ${holding.market_value}, day_change: ${holding.day_change}`);
           if (holding.sector && holding.sector.trim() !== '') {
-            const current = sectorMap.get(holding.sector) || 0;
-            sectorMap.set(holding.sector, current + holding.market_value);
+            const current = sectorMap.get(holding.sector) || { totalValue: 0, totalDayChange: 0, count: 0 };
+            current.totalValue += holding.market_value;
+            current.totalDayChange += (holding.day_change || 0) * holding.quantity; // Weight by quantity
+            current.count += 1;
+            sectorMap.set(holding.sector, current);
           } else {
             console.warn(`Holding ${holding.symbol} has no sector information`);
             // Add to "Unknown" category instead of ignoring
-            const current = sectorMap.get('Unknown') || 0;
-            sectorMap.set('Unknown', current + holding.market_value);
+            const current = sectorMap.get('Unknown') || { totalValue: 0, totalDayChange: 0, count: 0 };
+            current.totalValue += holding.market_value;
+            current.totalDayChange += (holding.day_change || 0) * holding.quantity;
+            current.count += 1;
+            sectorMap.set('Unknown', current);
           }
         }
       })
@@ -141,11 +147,11 @@ export class GraphsComponent implements OnInit {
       console.log('Sector map:', sectorMap);
       console.log('Sector map entries:', Array.from(sectorMap.entries()));
 
-      // Convert sectorMap to treemap format with colors based on day change
-      const treemapData = Array.from(sectorMap.entries()).map(([sector, value]) => ({
+      // Convert sectorMap to treemap format with colors based on average day change
+      const treemapData = Array.from(sectorMap.entries()).map(([sector, data]) => ({
         x: sector,
-        y: value,
-        fillColor: this.getRandomColor()
+        y: data.totalValue,
+        fillColor: this.getSectorColor(data.totalDayChange)
       }));
 
       this.sectorChartOptions = {
@@ -265,12 +271,9 @@ export class GraphsComponent implements OnInit {
     this.loadTimeSeriesData();
   }
 
-  getRandomColor(): string {
-    const colors = [
-      '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-      '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
-    ];
-    return colors[Math.floor(Math.random() * colors.length)];
+  getSectorColor(totalDayChange: number): string {
+    // If total day change is positive (green), negative (red)
+    return totalDayChange >= 0 ? '#10B981' : '#EF4444';
   }
 
 }
