@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { PortfolioService } from '../../services/portfolio.service';
 import { PortfolioData, ChartData, PortfolioSnapshot } from '../../models/portfolio.model';
-import { ApexAxisChartSeries, ApexChart, ApexXAxis, ApexTitleSubtitle, ApexNonAxisChartSeries, ApexResponsive, ApexYAxis } from 'ngx-apexcharts';
+import { ApexAxisChartSeries, ApexChart, ApexXAxis, ApexTitleSubtitle, ApexNonAxisChartSeries, ApexResponsive, ApexYAxis, ApexPlotOptions } from 'ngx-apexcharts';
 
 export type LineChartOptions = {
   series: ApexAxisChartSeries;
@@ -17,6 +17,14 @@ export type PieChartOptions = {
   labels: string[];
   responsive: ApexResponsive[];
   title: ApexTitleSubtitle;
+};
+
+export type TreemapChartOptions = {
+  series: ApexAxisChartSeries;
+  chart: ApexChart;
+  title: ApexTitleSubtitle;
+  responsive: ApexResponsive[];
+  plotOptions?: ApexPlotOptions;
 };
 
 @Component({
@@ -43,17 +51,38 @@ export class GraphsComponent implements OnInit {
     title: {},
   }
 
-  sectorChartOptions: PieChartOptions = {
+  sectorChartOptions: TreemapChartOptions = {
     series: [],
-    chart: { type: 'pie'},
-    labels: [],
-    responsive: [],
-    title: {},
-  }
+    chart: {
+      type: 'treemap',
+      height: '250px',
+    },
+    title: {
+      text: 'Sector Allocation'
+    },
+    responsive: [
+      {
+        breakpoint: 480,
+        options: {
+          chart: { width: 300 },
+        }
+      }
+    ]
+  };
 
   chartData: ChartData | null = null;
   timeSeriesData: PortfolioSnapshot[] | null = null;
 
+  // Time range options
+  timeRanges = [
+    { label: '1W', value: '1W' },
+    { label: '1M', value: '1M' },
+    { label: '3M', value: '3M' },
+    { label: '6M', value: '6M' },
+    { label: '1Y', value: '1Y' },
+    { label: 'MAX', value: 'MAX' }
+  ];
+  selectedPeriod: string = '1Y';
 
   portfolio: PortfolioData | null = null;
 
@@ -64,9 +93,12 @@ export class GraphsComponent implements OnInit {
     this.portfolioService.portfolio$.subscribe(data => {
       if (!data) return;
       this.portfolio = data;
+      console.log('Portfolio data received:', data);
+      console.log('Holdings:', data.holdings);
 
       // Filter out holdings with zero quantity for the pie chart
       const activeHoldings = this.portfolio.holdings.filter(h => h.quantity > 0);
+      console.log('Active holdings:', activeHoldings);
 
       this.holdingsChartOptions = {
         series: activeHoldings.map(h => h.market_value),
@@ -93,19 +125,39 @@ export class GraphsComponent implements OnInit {
       const sectorMap = new Map<string, number>();
       activeHoldings.forEach(holding => {
         if (holding.symbol != "CASH") {
-          const current = sectorMap.get(holding.sector) || 0;
-          sectorMap.set(holding.sector, current + holding.market_value);
+          console.log(`Processing holding: ${holding.symbol}, sector: ${holding.sector}, market_value: ${holding.market_value}`);
+          if (holding.sector && holding.sector.trim() !== '') {
+            const current = sectorMap.get(holding.sector) || 0;
+            sectorMap.set(holding.sector, current + holding.market_value);
+          } else {
+            console.warn(`Holding ${holding.symbol} has no sector information`);
+            // Add to "Unknown" category instead of ignoring
+            const current = sectorMap.get('Unknown') || 0;
+            sectorMap.set('Unknown', current + holding.market_value);
+          }
         }
       })
 
+      console.log('Sector map:', sectorMap);
+      console.log('Sector map entries:', Array.from(sectorMap.entries()));
+
+      // Convert sectorMap to treemap format with colors based on day change
+      const treemapData = Array.from(sectorMap.entries()).map(([sector, value]) => ({
+        x: sector,
+        y: value,
+        fillColor: this.getRandomColor()
+      }));
+
       this.sectorChartOptions = {
-        series: Array.from(sectorMap.values()),
+        series: [
+          {
+            data: treemapData
+          }
+        ],
         chart: {
-          type: 'pie',
+          type: 'treemap',
           height: '250px',
-          //width: '100%'
         },
-        labels: Array.from(sectorMap.keys()),
         title: {
           text: 'Sector Allocation'
         },
@@ -114,22 +166,46 @@ export class GraphsComponent implements OnInit {
             breakpoint: 480,
             options: {
               chart: { width: 300 },
-              legend: { position: 'bottom' }
             }
           }
         ]
       };
-
     });
 
-    this.portfolioService.timeSeries$.subscribe(data => {
+    // Load initial time series data
+    this.loadTimeSeriesData();
+  }
+
+  loadTimeSeriesData(): void {
+    this.portfolioService.getTimeSeriesData(this.selectedPeriod).subscribe(data => {
       if (data?.chart_data) {
         this.chartData = data;
         this.timeSeriesData = data?.chart_data.chart_data;
 
+        // Determine date format based on period
+        let dateFormat: Intl.DateTimeFormatOptions;
+        switch (this.selectedPeriod) {
+          case '1W':
+            dateFormat = { weekday: 'short', month: 'short', day: 'numeric' };
+            break;
+          case '1M':
+            dateFormat = { month: 'short', day: 'numeric' };
+            break;
+          case '3M':
+          case '6M':
+            dateFormat = { month: 'short', day: 'numeric' };
+            break;
+          case '1Y':
+          case 'MAX':
+            dateFormat = { month: 'short', year: '2-digit' };
+            break;
+          default:
+            dateFormat = { month: 'short', day: 'numeric' };
+        }
+
         //Setting graphs
         const dates = this.timeSeriesData.map(d =>
-          new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          new Date(d.date).toLocaleDateString('en-US', dateFormat)
         );
 
         this.portfolioValueChartOptions = {
@@ -141,32 +217,60 @@ export class GraphsComponent implements OnInit {
           ],
           chart: {
             type: 'line',
-            height: '250px',
-            //width: '100%',
+            height: '280px',
             toolbar: {
               show: false
             }
           },
           title: {
-            text: 'Portfolio Value Over Time'
+            text: 'Portfolio Value Over Time',
+            style: {
+              fontSize: '16px',
+              fontWeight: '600',
+              color: '#1f2937'
+            }
           },
           xaxis: {
-            categories: dates
+            categories: dates,
+            labels: {
+              style: {
+                colors: '#6b7280',
+                fontSize: '12px'
+              },
+              rotate: -45,
+              rotateAlways: true
+            }
           },
           yaxis: {
             labels: {
               formatter: function (value: number) {
                 return '$' + value.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
                 });
+              },
+              style: {
+                colors: '#6b7280',
+                fontSize: '12px'
               }
             }
           }
         };
       }
-    })
+    });
+  }
 
-  };
+  onPeriodChange(period: string): void {
+    this.selectedPeriod = period;
+    this.loadTimeSeriesData();
+  }
+
+  getRandomColor(): string {
+    const colors = [
+      '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+      '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
 
 }

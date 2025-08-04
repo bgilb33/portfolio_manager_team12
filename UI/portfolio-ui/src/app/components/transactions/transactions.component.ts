@@ -161,6 +161,19 @@ export class TransactionsComponent implements OnInit {
       this.statusType = 'success';
       this.portfolioService.getPortfolio().subscribe();
       this.portfolioService.getTimeSeriesData().subscribe();
+      
+      // Update sector information for new stocks
+      this.portfolioService.updateSectorInfo().subscribe({
+        next: (response) => {
+          console.log('Sector info updated:', response);
+          // Refresh portfolio again to get updated sector data
+          this.portfolioService.getPortfolio().subscribe();
+        },
+        error: (error) => {
+          console.error('Failed to update sector info:', error);
+        }
+      });
+      
       setTimeout(() => {
         this.statusMessage = '';
         this.statusType = '';
