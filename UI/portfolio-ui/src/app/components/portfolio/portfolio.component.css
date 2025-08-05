@@ -16,7 +16,7 @@
 .header {
   grid-area: header;
   background-color: #ffffff;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 2px solid #ddd;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -129,7 +129,7 @@
 .holdings {
   grid-area: holdings;
   background-color: #f9f9f9;
-  border-right: 1px solid #ddd;
+  border-right: 2px solid #ddd;
   overflow: hidden;
   height: 100%;
 }
@@ -144,11 +144,11 @@
   grid-area: transactions;
   background-color: #f9f9f9;
   overflow: hidden;
-  border-left: 1px solid #ddd;
+  border-left: 2px solid #ddd;
 }
 
 .market-overview {
   grid-area: market;
   background-color: #f9f9f9;
-  border-top: 1px solid #ddd;
+  border-top: 2px solid #ddd;
 }
