@@ -94,7 +94,8 @@ export class HoldingsComponent {
       if (data) {
         forkJoin([
           this.portfolioService.getPortfolio(),
-          this.portfolioService.getTimeSeriesData()
+          this.portfolioService.getTimeSeriesData(),
+          this.portfolioService.getWatchlist()
         ]).subscribe(() => {
           this.isRefreshing = false;
         });
