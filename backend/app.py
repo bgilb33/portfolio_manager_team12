@@ -99,6 +99,23 @@ def signin():
         logger.error(f"Sign in error: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/auth/signout', methods=['POST'])
+def signout():
+    try:
+        data = request.get_json()
+        if not data or 'user_id' not in data:
+            return jsonify({'error': 'User ID required'}), 400
+        
+        user_id = data['user_id']
+        ai_service = get_ai_chat_service()
+        ai_service.clear_chat_history(user_id)
+        ai_service.clear_cache(user_id)
+        
+        return jsonify({'message': 'Signed out successfully'}), 200
+    except Exception as e:
+        logger.error(f"Sign out error: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 # WATCHLIST ENDPOINTS
 

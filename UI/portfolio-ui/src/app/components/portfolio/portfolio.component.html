@@ -6,6 +6,30 @@
 </div>
 
 <div class="dashboard-grid" *ngIf="!isLoading">
+  <!-- Header Section -->
+  <header class="header">
+    <div class="header-left">
+      <h1 class="portfolio-title">Portfolio Manager</h1>
+    </div>
+    <div class="header-center">
+      <button (click)="openChat()" class="chat-btn">
+        <svg class="chat-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+        </svg>
+        <span>Chat with AI</span>
+      </button>
+    </div>
+    <div class="header-right">
+      <button (click)="logout()" class="logout-btn">
+        <svg class="logout-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17 7l-1.41 1.39L18.17 11H8v2h10.17l-2.58 2.61L17 17l5-5z"/>
+          <path d="M4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+        </svg>
+        <span>Logout</span>
+      </button>
+    </div>
+  </header>
+
   <aside class="holdings bg-gray-100">
     <app-holdings></app-holdings>
   </aside>
@@ -22,3 +46,5 @@
     <app-market-overview></app-market-overview>
   </footer>
 </div>
+
+<app-chat *ngIf="showChat"></app-chat>

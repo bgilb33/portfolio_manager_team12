@@ -1,0 +1,80 @@
+<div class="chat-container" [class.visible]="isVisible">
+  <div class="chat-header">
+    <h3>AI Portfolio Assistant</h3>
+    <div class="chat-actions">
+      <button class="clear-btn" (click)="clearChat()" title="Clear chat">
+        Clear
+      </button>
+      <button class="close-btn" (click)="toggleChat()" title="Close chat">
+        <svg viewBox="0 0 24 24" fill="currentColor" class="close-icon">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="chat-messages" #messagesContainer>
+    <div *ngIf="messages.length === 0" class="welcome-message">
+      <div class="welcome-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+      </div>
+      <h4>Welcome to Portfolio AI Assistant!</h4>
+      <p>Ask me about your portfolio performance, holdings, market insights, or investment strategies.</p>
+      <div class="suggestions">
+        <button class="suggestion-btn" (click)="sendSuggestion('How is my portfolio performing?')">
+          "How is my portfolio performing?"
+        </button>
+        <button class="suggestion-btn" (click)="sendSuggestion('What stocks should I consider?')">
+          "What stocks should I consider?"
+        </button>
+        <button class="suggestion-btn" (click)="sendSuggestion('Explain my asset allocation')">
+          "Explain my asset allocation"
+        </button>
+      </div>
+    </div>
+
+    <div *ngFor="let message of messages" 
+         class="message" 
+         [class.user-message]="message.isUser"
+         [class.ai-message]="!message.isUser">
+      <div class="message-content">
+        <div class="message-text">{{ message.message }}</div>
+        <div class="message-time">{{ message.timestamp | date:'shortTime' }}</div>
+      </div>
+    </div>
+
+    <div *ngIf="isLoading" class="message ai-message">
+      <div class="message-content">
+        <div class="typing-indicator">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-input">
+    <div class="input-container">
+      <textarea 
+        [(ngModel)]="newMessage"
+        (keypress)="onKeyPress($event)"
+        placeholder="Ask about your portfolio..."
+        class="message-input"
+        rows="1"
+        #messageInput
+        (input)="messageInput.style.height = 'auto'; messageInput.style.height = messageInput.scrollHeight + 'px'">
+      </textarea>
+      <button 
+        (click)="sendMessage()" 
+        class="send-btn"
+        [disabled]="!newMessage.trim() || isLoading">
+        <svg viewBox="0 0 24 24" fill="currentColor" class="send-icon">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div> 
