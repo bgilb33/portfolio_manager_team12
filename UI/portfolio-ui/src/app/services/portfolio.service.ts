@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, of, tap, throwError } from 'rxjs';
 import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData, StockSearchResult, RefreshResponse, WatchlistData, WatchlistDataResponse } from '../models/portfolio.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupabaseService } from './supabase.service';
@@ -49,6 +49,14 @@ export class PortfolioService {
     return this.http.get<PortfolioData>(`${this.host}/portfolio/${this.userID}`, this.httpOptions).pipe(
       tap((portfolio: PortfolioData) => {
         this.portfolioSubject.next(portfolio);
+      }),
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error occurred while fetching portfolio:', error.message);
+        } else {
+          console.warn('Unexpected error:', error);
+        }
+        return throwError(() => new Error('Failed to load portfolio.'));
       })
     );
   }
@@ -60,25 +68,86 @@ export class PortfolioService {
     return this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/${period}`, this.httpOptions).pipe(
       tap((chartData: ChartData) => {
         this.timeSerisSubject.next(chartData);
+      }),
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error occurred while fetching chart data:', error.message);
+        }
+        else {
+          console.log('Unexpected error:', error.message);
+        }
+        return throwError(() => new Error('Failed to load portfolio.'));
       })
     );
   }
 
 
   getUserTransactions(): Observable<TransactionsResponse> {
-    return this.http.get<TransactionsResponse>(`${this.host}/transactions/${this.userID}`, this.httpOptions);
+    return this.http.get<TransactionsResponse>(`${this.host}/transactions/${this.userID}`, this.httpOptions).pipe(
+      catchError(error => {
+        if (error.status === 400) {
+          console.warn('Client error:', error.error?.error || error.message);
+        } else if (error.status === 500) {
+          console.error('Server error:', error.error?.error || error.message);
+        } else {
+          console.error('Unexpected error:', error);
+        }
+        return throwError(() =>
+          new Error('Could not fetch transactions. Please try again later.')
+        );
+      })
+    );
   }
 
   getStockPrice(ticker: string): Observable<PriceDataResponse> {
-    return this.http.get<PriceDataResponse>(`${this.host}/market/price/${ticker}`);
+    return this.http.get<PriceDataResponse>(`${this.host}/market/price/${ticker}`).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error while fetching stock price:', error.message);
+        }
+        else {
+          console.error('Unexpected error:', error.message);
+        }
+
+        return throwError(() => {
+          new Error('Failed to load stock price.')
+        })
+      })
+    );
   }
 
   searchStocks(query: string): Observable<{results: StockSearchResult[]}> {
-    return this.http.get<{results: StockSearchResult[]}>(`${this.host}/market/search/${query}?fuzzy=true`);
+    return this.http.get<{results: StockSearchResult[]}>(`${this.host}/market/search/${query}?fuzzy=true`).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error while fetching stock price:', error.message);
+        }
+        else {
+          console.error('Unexpected error:', error.message);
+        }
+
+        return throwError(() => {
+          new Error('Failed to load search results.')
+        })
+      })
+    );
   }
 
   createTransaction(transaction: TransactionRequest): Observable<TransactionResponse> {
-    return this.http.post<TransactionResponse>(`${this.host}/transactions/${this.userID}`, transaction, this.httpOptions);
+    return this.http.post<TransactionResponse>(`${this.host}/transactions/${this.userID}`, transaction, this.httpOptions).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.log('Server error while fetching stock price:', error.message);
+        }
+        else {
+          console.log('Unexpected error:', error.message);
+        }
+
+        return throwError(() => {
+          new Error('Failed to load search results.')
+        })
+      })
+    );
   }
 
   createCashTransaction(transaction: CashRequest): Observable<TransactionResponse> {
