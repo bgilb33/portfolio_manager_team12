@@ -29,6 +29,7 @@ from services.analytics_service import (
 from services.watchlist_service import (
     get_watchlist, add_to_watchlist, remove_from_watchlist
 )
+from services.ai_chat_service import get_ai_chat_service
 
 from utils.database import init_database
 load_dotenv()
@@ -319,6 +320,52 @@ def update_sector_info(user_id):
         })
     except Exception as e:
         logger.error(f"Error in update_sector_info: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# AI CHAT ENDPOINTS
+
+@app.route('/api/chat/<user_id>', methods=['POST'])
+def chat_with_ai(user_id):
+    """Chat with AI assistant about portfolio"""
+    try:
+        data = request.get_json()
+        if not data or 'message' not in data:
+            return jsonify({'error': 'Message is required'}), 400
+        
+        message = data['message']
+        ai_service = get_ai_chat_service()
+        response = ai_service.chat(user_id, message)
+        
+        return jsonify(response)
+    except Exception as e:
+        logger.error(f"Error in chat_with_ai: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/chat/<user_id>/clear', methods=['POST'])
+def clear_chat_history(user_id):
+    """Clear chat history for user"""
+    try:
+        ai_service = get_ai_chat_service()
+        success = ai_service.clear_chat_history(user_id)
+        
+        return jsonify({
+            'success': success,
+            'message': 'Chat history cleared' if success else 'Failed to clear chat history'
+        })
+    except Exception as e:
+        logger.error(f"Error in clear_chat_history: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/chat/<user_id>/history', methods=['GET'])
+def get_chat_history(user_id):
+    """Get chat history for user"""
+    try:
+        ai_service = get_ai_chat_service()
+        history = ai_service.get_chat_history(user_id)
+        
+        return jsonify({'history': history})
+    except Exception as e:
+        logger.error(f"Error in get_chat_history: {e}")
         return jsonify({'error': str(e)}), 500
 
 # PORTFOLIO ANALYTICS ENDPOINTS
