@@ -163,6 +163,9 @@ export class GraphsComponent implements OnInit {
         chart: {
           type: 'treemap',
           height: '250px',
+          toolbar: {
+            show: false
+          }
         },
         title: {
           text: 'Sector Allocation'
