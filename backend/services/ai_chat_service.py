@@ -6,7 +6,7 @@ Uses Google GenAI with gemini-2.5-flash model
 import logging
 import os
 from typing import Dict, List, Any
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from google import genai
 
 from services.portfolio_service import get_portfolio_details
@@ -25,6 +25,9 @@ class AIChatService:
         self.client = genai.Client(api_key=api_key)
         self.model = "gemini-2.5-flash"
         self.active_chats: Dict[str, Any] = {}
+        self.cache: Dict[str, str] = {}
+        self.cache_timestamps: Dict[str, datetime] = {}
+        self.CACHE_DURATION = timedelta(minutes=5)
         self.system_instruction = (
             "You are a helpful portfolio management assistant. You have access to the user's portfolio data and can provide insights about their investments, market analysis, and portfolio performance. "
             "Your capabilities include: Analyzing portfolio performance and allocation, providing market insights and stock information, suggesting portfolio improvements, answering questions about specific holdings, and explaining investment concepts. "
@@ -37,6 +40,10 @@ class AIChatService:
         return self.active_chats[user_id]
 
     def _build_portfolio_context(self, user_id: str) -> str:
+        now = datetime.now(timezone.utc)
+        if user_id in self.cache and (now - self.cache_timestamps.get(user_id, now)) < self.CACHE_DURATION:
+            return self.cache[user_id]
+
         try:
             context_parts = []
             
@@ -117,7 +124,10 @@ class AIChatService:
             except Exception as e:
                 logger.warning(f"Could not get watchlist: {e}")
             
-            return "\n".join(context_parts)
+            context = "\n".join(context_parts)
+            self.cache[user_id] = context
+            self.cache_timestamps[user_id] = now
+            return context
         except Exception as e:
             logger.error(f"Error building portfolio context for user {user_id}: {e}")
             return "Portfolio data unavailable"
@@ -155,6 +165,17 @@ class AIChatService:
             return True
         except Exception as e:
             logger.error(f"Error clearing chat history for user {user_id}: {e}")
+            return False
+
+    def clear_cache(self, user_id: str) -> bool:
+        try:
+            if user_id in self.cache:
+                del self.cache[user_id]
+                del self.cache_timestamps[user_id]
+                logger.info(f"Cleared cache for user {user_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Error clearing cache for user {user_id}: {e}")
             return False
 
     def get_chat_history(self, user_id: str) -> List[Dict[str, Any]]:

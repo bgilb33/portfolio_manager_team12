@@ -13,6 +13,7 @@ import { GraphsComponent } from './components/graphs/graphs.component';
 import { TransactionsComponent } from './components/transactions/transactions.component';
 import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
 import { WatchlistComponent } from './components/watchlist/watchlist.component';
+import { ChatComponent } from './components/chat/chat.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { WatchlistComponent } from './components/watchlist/watchlist.component';
     GraphsComponent,
     TransactionsComponent,
     MarketOverviewComponent,
-    WatchlistComponent
+    WatchlistComponent,
+    ChatComponent
   ],
   imports: [
     BrowserModule,

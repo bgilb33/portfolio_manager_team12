@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import {
   createClient,
   SupabaseClient,
@@ -9,6 +10,7 @@ import {
 } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
+import { ChatService } from './chat.service';
 
 export interface UserProfile {
   id?: string;
@@ -24,7 +26,7 @@ export class SupabaseService {
   private _session = new BehaviorSubject<AuthSession | null>(null);
   public session$ = this._session.asObservable();
 
-  constructor() {
+  constructor(private http: HttpClient, private chatService: ChatService) {
     this.supabase = createClient(
       environment.supabaseUrl,
       environment.supabaseKey
@@ -57,7 +59,13 @@ export class SupabaseService {
     return this.supabase.auth.signInWithOtp({ email }); // for magic link (OTP)
   }
 
-  signOut() {
+  async signOut() {
+    const user = await this.getUser();
+    if (user.data.user) {
+      this.http.post(`${environment.apiUrl}/api/auth/signout`, { user_id: user.data.user.id }).subscribe();
+    }
+    localStorage.removeItem('user');
+    this.chatService.clearMessages();
     return this.supabase.auth.signOut();
   }
 
