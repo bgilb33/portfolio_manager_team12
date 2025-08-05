@@ -1,6 +1,6 @@
 <div class="flex h-[400px] overflow-hidden">
   <div class=" w-1/4 p-2 overflow-y-auto">
-    <h2 class="text-sm font-semibold mb-2">Market Overview</h2>
+    <h2 class="text-sm font-semibold mb-2 text-blue-600">Market Overview</h2>
     <div *ngFor="let index of indices" class="mb-1 px-2 py-1 rounded-md shadow-sm border text-xs">
       <h3 class="font-bold">{{ index.name }}</h3>
       <p> ${{ formatNumber(index.current_price) }}</p>

@@ -1,11 +1,11 @@
 <div class="flex flex-col h-full p-3 overflow-y-auto">
 
-  <div class="flex justify-center items-center h-[70px] bg-gray-300 rounded mb-4">
-    <h1 class="text-xl font-semibold text-gray-800">Transactions</h1>
+  <div class="flex justify-center items-center h-[70px] bg-blue-600 rounded mb-4">
+    <h1 class="text-xl font-semibold text-white">Transactions</h1>
   </div>
 
-  <div class="flex justify-center items-center h-[30px] bg-gray-300 rounded mb-4">
-    <h3 class="text-sm font-semibold">Buy and Sell Securities</h3>
+  <div class="flex justify-center items-center h-[30px] bg-blue-600 rounded mb-4">
+    <h3 class="text-sm font-semibold text-white">Buy and Sell Securities</h3>
   </div>
 
   <div class="w-full mb-4 relative">
@@ -16,7 +16,7 @@
            (keyup.enter)="searchStock()"
            />
     <div *ngIf="searchResults.length > 0" class="absolute z-10 w-full bg-white border border-gray-300 rounded mt-1 max-h-60 overflow-y-auto">
-      <ul class="divide-y divide-gray-200">
+      <ul class="divide-y divide-blue-200">
         <li *ngFor="let stock of searchResults" (click)="selectStock(stock)" class="p-2 hover:bg-gray-100 cursor-pointer">
           <div class="flex justify-between items-start">
             <div class="flex-1">
@@ -99,8 +99,8 @@
     {{ statusMessage }}
   </div>
 
-  <div class="flex justify-center items-center h-[30px] bg-gray-300 rounded mb-4">
-    <h3 class="text-sm font-semibold">Deposit or Withdraw Cash</h3>
+  <div class="flex justify-center items-center h-[30px] bg-blue-600 rounded mb-4">
+    <h3 class="text-sm font-semibold text-white">Deposit or Withdraw Cash</h3>
   </div>
 
   <div class="flex flex-col gap-3 mb-6">
@@ -232,7 +232,7 @@
         No transactions found.
       </div>
 
-      <div *ngFor="let tx of transactions" class="border-b border-gray-200 py-3 text-sm">
+              <div *ngFor="let tx of transactions" class="border-b border-blue-200 py-3 text-sm">
         <div class="flex justify-between">
           <div>
             <div class="font-semibold">{{ tx.transaction_type }} {{ tx.quantity }}</div>

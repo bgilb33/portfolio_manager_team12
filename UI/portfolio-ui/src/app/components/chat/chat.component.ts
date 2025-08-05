@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -27,17 +27,20 @@ interface ChatHistoryResponse {
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
-export class ChatComponent implements OnInit, OnDestroy {
+export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   messages: ChatMessage[] = [];
   newMessage: string = '';
   isLoading: boolean = false;
   isVisible: boolean = false;
   userId: string = '';
   private messagesSubscription: Subscription;
+  @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
+  private shouldScrollToBottom = false;
 
   constructor(private http: HttpClient, private chatService: ChatService, private sanitizer: DomSanitizer) {
     this.messagesSubscription = this.chatService.messages$.subscribe(messages => {
       this.messages = messages;
+      this.shouldScrollToBottom = true;
     });
   }
 
@@ -130,6 +133,22 @@ export class ChatComponent implements OnInit, OnDestroy {
     sessionStorage.setItem('current_user', currentUser || '');
   }
 
+  ngAfterViewChecked(): void {
+    if (this.shouldScrollToBottom && this.messagesContainer) {
+      this.scrollToBottom();
+      this.shouldScrollToBottom = false;
+    }
+  }
+
+  private scrollToBottom(): void {
+    try {
+      const element = this.messagesContainer.nativeElement;
+      element.scrollTop = element.scrollHeight;
+    } catch (err) {
+      console.error('Error scrolling to bottom:', err);
+    }
+  }
+
   ngOnDestroy(): void {
     this.messagesSubscription.unsubscribe();
     
@@ -157,6 +176,13 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (this.isVisible && this.messages.length === 0) {
       console.log('Chat opened with no messages - starting fresh');
     }
+    
+    // Scroll to bottom when chat is opened
+    if (this.isVisible) {
+      setTimeout(() => {
+        this.shouldScrollToBottom = true;
+      }, 100);
+    }
   }
 
   sendMessage(): void {
@@ -182,6 +208,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     console.log('Clearing message, setting to empty string');
     this.newMessage = '';
     this.isLoading = true;
+    this.shouldScrollToBottom = true;
 
     // Use the async method but don't await it in the main function
     this.sendMessageAsync(messageToSend);
@@ -207,6 +234,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       };
 
       this.chatService.addMessage(aiMessage);
+      this.shouldScrollToBottom = true;
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: ChatMessage = {
@@ -216,6 +244,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         timestamp: new Date()
       };
       this.chatService.addMessage(errorMessage);
+      this.shouldScrollToBottom = true;
     } finally {
       this.isLoading = false;
     }
