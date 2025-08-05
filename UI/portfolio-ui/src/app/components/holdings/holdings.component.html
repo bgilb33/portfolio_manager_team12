@@ -98,8 +98,8 @@
           <div class="font-semibold text-gray-800">{{ selectedHolding.total_cost | currency:'USD':'symbol':'1.2-2'}}</div>
         </div>
         <div class="flex justify-between">
-          <div class="font-medium text-gray-600">Gain Loss:</div>
-          <div class="font-semibold text-gray-800">{{ selectedHolding.gain_loss | currency:'USD':'symbol':'1.2-2'}}</div>
+          <div class="font-medium" [ngClass]="selectedHolding.gain_loss >= 0 ? 'text-green-600' : 'text-red-600'">Unrealized G/L:</div>
+          <div class="font-semibold" [ngClass]="selectedHolding.gain_loss >= 0 ? 'text-green-600' : 'text-red-600'">{{ selectedHolding.gain_loss | currency:'USD':'symbol':'1.2-2'}}</div>
         </div>
       </div>
     </div>
