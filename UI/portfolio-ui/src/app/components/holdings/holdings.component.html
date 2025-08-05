@@ -1,6 +1,6 @@
 <div class="flex flex-col h-full p-4">
-  <div class="relative flex items-center justify-center h-16 mb-4 bg-gray-300 rounded">
-    <h1 class="text-xl font-semibold text-gray-800">Holdings</h1>
+  <div class="relative flex items-center justify-center h-16 mb-4 bg-blue-600 rounded">
+    <h1 class="text-xl font-semibold text-white">Holdings</h1>
     <button
       (click)="refresh()"
       class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition shadow"
@@ -34,8 +34,8 @@
     </div>
   </div>
 
-  <div class="flex items-center justify-center h-8 mb-2 bg-gray-300 rounded">
-    <h3 class="text-sm font-medium text-gray-800">Stocks</h3>
+  <div class="flex items-center justify-center h-8 mb-2 bg-blue-600 rounded">
+    <h3 class="text-sm font-medium text-white">Stocks</h3>
   </div>
 
   <div class="flex flex-col overflow-y-auto mb-4">
@@ -49,7 +49,7 @@
         'bg-blue-100': selectedHolding?.symbol === h.symbol,
         'hover:bg-gray-200': true
       }"
-      class="flex justify-between px-3 py-2 border-b border-gray-300 cursor-pointer"
+      class="flex justify-between px-3 py-2 border-b border-blue-300 cursor-pointer"
     >
       <div class="flex-1">
         <div class="font-medium text-gray-700">{{ h.symbol }}</div>
@@ -68,8 +68,8 @@
 
   <div class="mt-auto h-[250px]">
     <div *ngIf="selectedHolding">
-      <div class="flex items-center justify-center h-8 mb-2 bg-gray-300 rounded">
-        <h3 class="text-sm font-medium text-gray-800">{{ selectedHolding.name }}</h3>
+      <div class="flex items-center justify-center h-8 mb-2 bg-blue-600 rounded">
+        <h3 class="text-sm font-medium text-white">{{ selectedHolding.name }}</h3>
       </div>
 
       <div class="flex flex-col gap-1 px-2">

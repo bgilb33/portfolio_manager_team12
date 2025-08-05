@@ -31,7 +31,7 @@ class AIChatService:
         self.system_instruction = (
             "You are a helpful portfolio management assistant. You have access to the user's portfolio data and can provide insights about their investments, market analysis, and portfolio performance. "
             "Your capabilities include: Analyzing portfolio performance and allocation, providing market insights and stock information, suggesting portfolio improvements, answering questions about specific holdings, and explaining investment concepts. "
-            "Always be helpful, accurate, and provide actionable insights."
+            "Always be helpful, accurate, and provide actionable insights. Stricly provide the information requested, No long responses. Make them brief, succinct and to the point. Do not cajole the user or say that's a great question or anything of the sort. Just answer the question."
         )
 
     def _get_or_create_chat(self, user_id: str):
