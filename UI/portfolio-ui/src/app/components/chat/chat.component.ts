@@ -3,12 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { ChatService } from '../../services/chat.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { marked } from 'marked';
 
 interface ChatMessage {
   id: string;
   message: string;
   isUser: boolean;
   timestamp: Date;
+  html?: SafeHtml;
 }
 
 interface ChatResponse {
@@ -32,7 +35,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   userId: string = '';
   private messagesSubscription: Subscription;
 
-  constructor(private http: HttpClient, private chatService: ChatService) {
+  constructor(private http: HttpClient, private chatService: ChatService, private sanitizer: DomSanitizer) {
     this.messagesSubscription = this.chatService.messages$.subscribe(messages => {
       this.messages = messages;
     });
@@ -190,11 +193,17 @@ export class ChatComponent implements OnInit, OnDestroy {
         message: messageToSend
       }));
 
+      const markdown = response.response || 'Sorry, I couldn\'t process your request.';
+      const parsedMarkdown = await marked.parse(markdown);
+      const html = this.sanitizer.bypassSecurityTrustHtml(parsedMarkdown);
+
+
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         message: response.response || 'Sorry, I couldn\'t process your request.',
         isUser: false,
-        timestamp: new Date()
+        timestamp: new Date(),
+        html: html
       };
 
       this.chatService.addMessage(aiMessage);

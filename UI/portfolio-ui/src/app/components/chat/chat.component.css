@@ -153,6 +153,29 @@
   white-space: pre-wrap;
 }
 
+.message-text h1, .message-text h2, .message-text h3 {
+  margin: 0.5em 0;
+}
+
+.message-text p {
+  margin: 0.4em 0;
+}
+
+.message-text code {
+  background-color: #f3f4f6;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.message-text pre {
+  background-color: #f3f4f6;
+  padding: 10px;
+  overflow-x: auto;
+  border-radius: 4px;
+}
+
+
 .message-time {
   font-size: 11px;
   opacity: 0.7;

@@ -104,7 +104,7 @@ export class GraphsComponent implements OnInit {
         series: activeHoldings.map(h => h.market_value),
         chart: {
           type: 'pie',
-          height: '250px',
+          height: '225px',
           //width: '100%'
         },
         labels: activeHoldings.map(h => h.symbol),
@@ -162,7 +162,7 @@ export class GraphsComponent implements OnInit {
         ],
         chart: {
           type: 'treemap',
-          height: '250px',
+          height: '225px',
           toolbar: {
             show: false
           }
