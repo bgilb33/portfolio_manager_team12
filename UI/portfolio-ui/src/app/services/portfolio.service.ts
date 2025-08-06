@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, of, tap, throwError } from 'rxjs';
 import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData, StockSearchResult, RefreshResponse, WatchlistData, WatchlistDataResponse } from '../models/portfolio.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupabaseService } from './supabase.service';
@@ -49,6 +49,14 @@ export class PortfolioService {
     return this.http.get<PortfolioData>(`${this.host}/portfolio/${this.userID}`, this.httpOptions).pipe(
       tap((portfolio: PortfolioData) => {
         this.portfolioSubject.next(portfolio);
+      }),
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error occurred while fetching portfolio:', error.message);
+        } else {
+          console.warn('Unexpected error:', error);
+        }
+        return throwError(() => new Error('Failed to load portfolio.'));
       })
     );
   }
@@ -60,37 +68,137 @@ export class PortfolioService {
     return this.http.get<ChartData>(`${this.host}/portfolio/chart/${this.userID}/${period}`, this.httpOptions).pipe(
       tap((chartData: ChartData) => {
         this.timeSerisSubject.next(chartData);
+      }),
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error occurred while fetching chart data:', error.message);
+        }
+        else {
+          console.log('Unexpected error:', error.message);
+        }
+        return throwError(() => new Error('Failed to load portfolio.'));
       })
     );
   }
 
 
   getUserTransactions(): Observable<TransactionsResponse> {
-    return this.http.get<TransactionsResponse>(`${this.host}/transactions/${this.userID}`, this.httpOptions);
+    return this.http.get<TransactionsResponse>(`${this.host}/transactions/${this.userID}`, this.httpOptions).pipe(
+      catchError(error => {
+        if (error.status === 400) {
+          console.warn('Client error while fetching user transactions:', error.error?.error || error.message);
+        } else if (error.status === 500) {
+          console.error('Server error while fetching user transactions:', error.error?.error || error.message);
+        } else {
+          console.error('Unexpected error:', error);
+        }
+        return throwError(() =>
+          new Error('Could not fetch transactions. Please try again later.')
+        );
+      })
+    );
   }
 
   getStockPrice(ticker: string): Observable<PriceDataResponse> {
-    return this.http.get<PriceDataResponse>(`${this.host}/market/price/${ticker}`);
+    return this.http.get<PriceDataResponse>(`${this.host}/market/price/${ticker}`).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error while fetching stock price:', error.message);
+        }
+        else {
+          console.error('Unexpected error:', error.message);
+        }
+
+        return throwError(() => 
+          new Error('Failed to load stock price.')
+        )
+      })
+    );
   }
 
   searchStocks(query: string): Observable<{results: StockSearchResult[]}> {
-    return this.http.get<{results: StockSearchResult[]}>(`${this.host}/market/search/${query}?fuzzy=true`);
+    return this.http.get<{results: StockSearchResult[]}>(`${this.host}/market/search/${query}?fuzzy=true`).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error while searching stocks:', error.message);
+        }
+        else {
+          console.error('Unexpected error:', error.message);
+        }
+
+        return throwError(() => 
+          new Error('Failed to load search results.')
+        )
+      })
+    );
   }
 
   createTransaction(transaction: TransactionRequest): Observable<TransactionResponse> {
-    return this.http.post<TransactionResponse>(`${this.host}/transactions/${this.userID}`, transaction, this.httpOptions);
+    return this.http.post<TransactionResponse>(`${this.host}/transactions/${this.userID}`, transaction, this.httpOptions).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.log('Server error while creating stock transaction:', error.message);
+        }
+        else {
+          console.log('Unexpected error:', error.message);
+        }
+
+        return throwError(() => 
+          new Error('Failed to create transaction.')
+        )
+      })
+    );
   }
 
   createCashTransaction(transaction: CashRequest): Observable<TransactionResponse> {
-    return this.http.post<TransactionResponse>(`${this.host}/transactions/${this.userID}`, transaction, this.httpOptions);
+    return this.http.post<TransactionResponse>(`${this.host}/transactions/${this.userID}`, transaction, this.httpOptions).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.log('Server error while creating cash transaction:', error.message);
+        }
+        else {
+          console.log('Unexpected error:', error.message);
+        }
+
+        return throwError(() => 
+          new Error('Failed to create transaction.')
+        )
+      })      
+    );
   }
 
   refreshHoldings(): Observable<RefreshResponse> {
-    return this.http.post<RefreshResponse>(`${this.host}/market/prices/refresh/${this.userID}`, {}, this.httpOptions);
+    return this.http.post<RefreshResponse>(`${this.host}/market/prices/refresh/${this.userID}`, {}, this.httpOptions).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.log('Server error while refreshing data:', error.message);
+        }
+        else {
+          console.log('Unexpected error:', error.message);
+        }
+
+        return throwError(() => 
+          new Error('Failed to refresh data.')
+        )
+      })      
+    );
   }
 
   updateSectorInfo(): Observable<any> {
-    return this.http.post<any>(`${this.host}/market/sectors/update/${this.userID}`, {}, this.httpOptions);
+    return this.http.post<any>(`${this.host}/market/sectors/update/${this.userID}`, {}, this.httpOptions).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.log('Server error while updating sector info:', error.message);
+        }
+        else {
+          console.log('Unexpected error:', error.message);
+        }
+
+        return throwError(() => 
+          new Error('Failed to update server info.')
+        )
+      }) 
+    );
   }
 
   getMajorIndices(): void {
@@ -134,16 +242,42 @@ export class PortfolioService {
     return this.http.get<WatchlistDataResponse>(`${this.host}/watchlist/${this.userID}`, this.httpOptions).pipe(
       tap((res: WatchlistDataResponse) => {
         this.watchlistSubject.next(res.watchlist);
+      }),
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error occurred while fetchin watchlist:', error.message);
+        } else {
+          console.warn('Unexpected error:', error);
+        }
+        return throwError(() => new Error('Failed to load watchlist.'));
       })  
     );
   }
 
   addToWatchlist(symbol: string): Observable<any> {
-    return this.http.post(`${this.host}/watchlist/${this.userID}`, { symbol }, this.httpOptions);
+    return this.http.post(`${this.host}/watchlist/${this.userID}`, { symbol }, this.httpOptions).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error occurred while adding to watchlist:', error.message);
+        } else {
+          console.warn('Unexpected error:', error);
+        }
+        return throwError(() => new Error('Failed to add to watchlist.'));
+      })
+    );
   }
 
   removeFromWatchlist(symbol: string): Observable<any> {
-    return this.http.delete(`${this.host}/watchlist/${this.userID}/${symbol}`, this.httpOptions);
+    return this.http.delete(`${this.host}/watchlist/${this.userID}/${symbol}`, this.httpOptions).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error occurred while removing from watchlist:', error.message);
+        } else {
+          console.warn('Unexpected error:', error);
+        }
+        return throwError(() => new Error('Failed to remove from watchlist.'));
+      })
+    );
   }
 
 }
