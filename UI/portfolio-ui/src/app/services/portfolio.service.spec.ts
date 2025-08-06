@@ -33,6 +33,9 @@ describe('PortfolioService', () => {
     httpMock.verify();
   });
 
+
+  // getPortfolio Tests
+
   it('should return user portfolio', () => {
     service.userID = 'user123'
     const mockResponse: PortfolioData = {
@@ -135,6 +138,28 @@ describe('PortfolioService', () => {
     expect(subjectResult!).toEqual(mockResponse);
   });
 
+  it('should handle error when fetching portfolio fails', () => {
+    service.userID = 'user123';
+
+    let errorMessage: string | null = null;
+
+    service.getPortfolio().subscribe({
+      next: () => fail('Expected error, but got success'),
+      error: (err) => {
+        errorMessage = err.message;
+      }
+    });
+
+    const req = httpMock.expectOne(`http://localhost:2000/api/portfolio/${service.userID}`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ error: 'Internal server error' }, { status: 500, statusText: 'Server Error' });
+
+    expect(errorMessage!).toBe('Failed to load portfolio.');
+  });
+
+
+  // getTimeSeriesData Tests
+
   it('should return time series data correctly', () => {
     service.userID = 'user123';
 
@@ -185,6 +210,27 @@ describe('PortfolioService', () => {
 
   });
 
+  it('should handle error when fetching time series data fails', () => {
+    service.userID = 'user123';
+
+    let errorMessage: string | null = null;
+
+    service.getTimeSeriesData().subscribe({
+      next: () => fail('Expected error, got success'),
+      error: (err) => {
+        errorMessage = err.message;
+      }
+    });
+
+    const req = httpMock.expectOne(`http://localhost:2000/api/portfolio/chart/${service.userID}/1Y`);
+    req.flush({ error: 'Chart generation failed' }, { status: 500, statusText: 'Server Error' });
+
+    expect(errorMessage!).toBe('Failed to load portfolio.');
+  });
+
+
+  // getUserTransaction Tests
+
   it('should fetch user transactions correctly', () => {
     service.userID = 'user123';
 
@@ -228,6 +274,27 @@ describe('PortfolioService', () => {
     req.flush(mockResponse);
   });
 
+  it('should handle error when fetching user transactions fails', () => {
+    service.userID = 'user123';
+
+    let errorMessage: string | null = null;
+
+    service.getUserTransactions().subscribe({
+      next: () => fail('Expected error, got success'),
+      error: (err) => {
+        errorMessage = err.message;
+      }
+    });
+
+    const req = httpMock.expectOne(`http://localhost:2000/api/transactions/${service.userID}`);
+    req.flush({ error: 'Database error' }, { status: 500, statusText: 'Server Error' });
+
+    expect(errorMessage!).toBe('Could not fetch transactions. Please try again later.');
+  });
+
+
+  // getStockPrice Tests
+
   it('should fetch stock price by ticker', () => {
     const mockResponse: PriceDataResponse = {
       price_data: {
@@ -249,6 +316,25 @@ describe('PortfolioService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });
+
+  it('should handle error when fetching stock price fails', () => {
+    let errorMessage: string | null = null;
+
+    service.getStockPrice('AAPL').subscribe({
+      next: () => fail('Expected error, got success'),
+      error: (err) => {
+        errorMessage = err.message;
+      }
+    });
+
+    const req = httpMock.expectOne('http://localhost:2000/api/market/price/AAPL');
+    req.flush({ error: 'Stock data unavailable' }, { status: 500, statusText: 'Server Error' });
+
+    expect(errorMessage!).toBe('Failed to load stock price.');
+  });
+
+
+  // searchStocks Tests
 
   it('should complete stock search', () => {
     const mockResponse = {
@@ -273,6 +359,25 @@ describe('PortfolioService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
   });
+
+  it('should handle error when searching stocks fails', () => {
+    let errorMessage: string | null = null;
+
+    service.searchStocks('COST').subscribe({
+      next: () => fail('Expected error, got success'),
+      error: (err) => {
+        errorMessage = err.message;
+      }
+    });
+
+    const req = httpMock.expectOne('http://localhost:2000/api/market/search/COST?fuzzy=true');
+    req.flush({ error: 'Search failed' }, { status: 500, statusText: 'Server Error' });
+
+    expect(errorMessage!).toBe('Failed to load search results.');
+  });
+
+
+  // createTransaction Tests
 
   it('should purchase a stock', () => {
     service.userID = 'user123';
@@ -310,6 +415,35 @@ describe('PortfolioService', () => {
     req.flush(mockResponse);
   })
 
+  it('should handle error when creating stock transaction fails', () => {
+    service.userID = 'user123';
+
+    const request = {
+      symbol: 'AAPL',
+      transaction_type: 'BUY',
+      quantity: 1,
+      price: 204.04,
+      transaction_date: new Date()
+    };
+
+    let errorMessage: string | null = null;
+
+    service.createTransaction(request).subscribe({
+      next: () => fail('Expected error, got success'),
+      error: (err) => {
+        errorMessage = err.message;
+      }
+    });
+
+    const req = httpMock.expectOne(`http://localhost:2000/api/transactions/${service.userID}`);
+    req.flush({ error: 'Transaction failed' }, { status: 500, statusText: 'Server Error' });
+
+    expect(errorMessage!).toBe('Failed to create transaction.');
+  });
+
+
+  // createCashTransaction Tests
+
   it('should deposit cash', () => {
     service.userID = 'user123';
 
@@ -345,6 +479,34 @@ describe('PortfolioService', () => {
     req.flush(mockResponse);
   })
 
+  it('should handle error when creating cash transaction fails', () => {
+    service.userID = 'user123';
+
+    const request = {
+      transaction_type: 'DEPOSIT',
+      amount: 500,
+      transaction_date: new Date(),
+      notes: ''
+    };
+
+    let errorMessage: string | null = null;
+
+    service.createCashTransaction(request).subscribe({
+      next: () => fail('Expected error, got success'),
+      error: (err) => {
+        errorMessage = err.message;
+      }
+    });
+
+    const req = httpMock.expectOne(`http://localhost:2000/api/transactions/${service.userID}`);
+    req.flush({ error: 'Failed to deposit' }, { status: 500, statusText: 'Server Error' });
+
+    expect(errorMessage!).toBe('Failed to create transaction.');
+  });
+
+
+  // refreshHoldings Tests
+
   it('should refresh holdings', () => {
     service.userID = 'user123';
 
@@ -364,6 +526,27 @@ describe('PortfolioService', () => {
 
     req.flush(mockResponse);
   })
+
+  it('should handle error when refreshing holdings fails', () => {
+    service.userID = 'user123';
+
+    let errorMessage: string | null = null;
+
+    service.refreshHoldings().subscribe({
+      next: () => fail('Expected error, got success'),
+      error: (err) => {
+        errorMessage = err.message;
+      }
+    });
+
+    const req = httpMock.expectOne(`http://localhost:2000/api/market/prices/refresh/${service.userID}`);
+    req.flush({ error: 'Failed to update prices' }, { status: 500, statusText: 'Server Error' });
+
+    expect(errorMessage!).toBe('Failed to refresh data.');
+  });
+
+
+  // getMajorIndeces Tests
 
   it('should fetch and aggregate major indices', fakeAsync(() => {
     const mockResponses: Record<string, PriceDataResponse> = {
@@ -427,6 +610,21 @@ describe('PortfolioService', () => {
   }));
 
 
+  // updateSectorInfo Tests
+
+  it('should update sector information for the user', () => {
+    service.userID = 'user123';
+
+    const mockResponse = { message: 'Sectors updated' };
+
+    service.updateSectorInfo().subscribe(response => {
+      expect(response).toEqual(mockResponse);
+    });
+
+    const req = httpMock.expectOne(`http://localhost:2000/api/market/sectors/update/${service.userID}`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush(mockResponse);
+  });
+
 });
-
-
