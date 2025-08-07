@@ -1,10 +1,10 @@
 <div class="flex flex-col h-full p-3 overflow-y-auto">
 
-  <div class="flex justify-center items-center h-16 bg-blue-600 rounded mb-4">
+  <div class="flex justify-center items-center h-16 bg-blue-900 rounded mb-4">
     <h1 class="text-xl font-semibold text-white">Transactions</h1>
   </div>
 
-  <div class="flex justify-center items-center h-[30px] bg-blue-600 rounded mb-4">
+  <div class="flex justify-center items-center h-[30px] bg-blue-900 rounded mb-4">
     <h3 class="text-sm font-semibold text-white">Buy and Sell Securities</h3>
   </div>
 
@@ -87,8 +87,8 @@
   </div>
 
   <div class="flex gap-2 mb-6">
-    <button class="flex-1 py-2 rounded bg-red-500 text-white text-sm font-semibold hover:bg-red-600" (click)="cancelTrade()">Cancel</button>
-    <button class="flex-1 py-2 rounded bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700" (click)="submitTrade()">Submit</button>
+    <button class="flex-1 py-2 rounded bg-red-400 text-white text-sm font-semibold hover:bg-red-600" (click)="cancelTrade()">Cancel</button>
+    <button class="flex-1 py-2 rounded bg-blue-500 text-white text-sm font-semibold hover:bg-blue-700" (click)="submitTrade()">Submit</button>
   </div>
 
   <!-- Trade Status Message -->
@@ -112,7 +112,7 @@
     </div>
   </div>
 
-  <div class="flex justify-center items-center h-[30px] bg-blue-600 rounded mb-4">
+  <div class="flex justify-center items-center h-[30px] bg-blue-900 rounded mb-4">
     <h3 class="text-sm font-semibold text-white">Deposit or Withdraw Cash</h3>
   </div>
 
@@ -132,8 +132,8 @@
   </div>
 
   <div class="flex gap-2">
-    <button class="flex-1 py-1.5 rounded bg-red-500 text-white text-sm font-semibold hover:bg-red-600" (click)="cancelCashTransaction()">Cancel</button>
-    <button class="flex-1 py-1.5 rounded bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700" (click)="submitCashTransaction()">Submit</button>
+    <button class="flex-1 py-1.5 rounded bg-red-400 text-white text-sm font-semibold hover:bg-red-600" (click)="cancelCashTransaction()">Cancel</button>
+    <button class="flex-1 py-1.5 rounded bg-blue-500 text-white text-sm font-semibold hover:bg-blue-700" (click)="submitCashTransaction()">Submit</button>
   </div>
 
   <!-- Cash Transaction Status Message -->
@@ -237,7 +237,7 @@
           Cancel
         </button>
         <button
-          class="flex-1 py-2 rounded bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700"
+          class="flex-1 py-2 rounded bg-blue-400 text-white text-sm font-semibold hover:bg-blue-700"
           (click)="confirmTrade()"
         >
           Confirm

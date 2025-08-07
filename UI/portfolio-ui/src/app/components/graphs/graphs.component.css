@@ -59,7 +59,7 @@ apx-chart {
 }
 
 .time-range-button.active {
-  background-color: #2563eb;
+  background-color: #3b496d;
   color: white;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
@@ -79,7 +79,7 @@ apx-chart {
 }
 
 .time-range-button:focus {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #3b496d;
   outline-offset: 2px;
 }
 
@@ -87,7 +87,7 @@ apx-chart {
 .chart-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: #3b496d;
   margin-bottom: 1rem;
 }
 

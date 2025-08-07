@@ -9,6 +9,7 @@ export type LineChartOptions = {
   xaxis: ApexXAxis;
   yaxis: ApexYAxis;
   title: ApexTitleSubtitle;
+  colors: string[]
 };
 
 export type PieChartOptions = {
@@ -17,6 +18,7 @@ export type PieChartOptions = {
   labels: string[];
   responsive: ApexResponsive[];
   title: ApexTitleSubtitle;
+  colors: string[]
 };
 
 export type TreemapChartOptions = {
@@ -39,7 +41,8 @@ export class GraphsComponent implements OnInit {
     chart: { type: 'line' },
     xaxis: {},
     yaxis: {},
-    title: {}
+    title: {},
+    colors: []
   };
 
 
@@ -49,6 +52,7 @@ export class GraphsComponent implements OnInit {
     labels: [],
     responsive: [],
     title: {},
+    colors: []
   }
 
   sectorChartOptions: TreemapChartOptions = {
@@ -58,7 +62,12 @@ export class GraphsComponent implements OnInit {
       height: '250px',
     },
     title: {
-      text: 'Sector Allocation'
+      text: 'Sector Allocation',
+      style: {
+        fontSize: '16px',
+        fontWeight: '600',
+        color: '#3b496d'
+      }
     },
     responsive: [
       {
@@ -109,7 +118,12 @@ export class GraphsComponent implements OnInit {
         },
         labels: activeHoldings.map(h => h.symbol),
         title: {
-          text: 'Holdings Allocation'
+          text: 'Holdings Allocation',
+          style: {
+            fontSize: '16px',
+            fontWeight: '600',
+            color: '#3b496d'
+          }
         },
         responsive: [
           {
@@ -119,7 +133,17 @@ export class GraphsComponent implements OnInit {
               legend: { position: 'bottom' }
             }
           }
+        ],
+        colors: [
+          "#3b496d", // deep slate blue (theme anchor)
+          "#10B981", // emerald green
+          "#F59E0B", // amber
+          "#EF4444", // soft red
+          "#6366F1", // indigo
+          "#14B8A6", // teal
+          "#F97316"  // orange
         ]
+
       };
 
       const sectorMap = new Map<string, { totalValue: number, totalDayChange: number, count: number }>();
@@ -177,7 +201,7 @@ export class GraphsComponent implements OnInit {
               chart: { width: 300 },
             }
           }
-        ]
+        ],
       };
     });
 
@@ -226,7 +250,7 @@ export class GraphsComponent implements OnInit {
           ],
           chart: {
             type: 'line',
-            height: '300px',
+            height: '265px',
             toolbar: {
               show: false
             }
@@ -236,7 +260,7 @@ export class GraphsComponent implements OnInit {
             style: {
               fontSize: '16px',
               fontWeight: '600',
-              color: '#1f2937'
+              color: '#3b496d'
             }
           },
           xaxis: {
@@ -271,7 +295,8 @@ export class GraphsComponent implements OnInit {
                 fontSize: '12px'
               }
             }
-          }
+          },
+          colors: ["#3b496d"]
         };
       }
     });

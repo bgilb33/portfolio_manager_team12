@@ -1,4 +1,4 @@
-<div class="grid grid-cols-2 grid-rows-[340px_250px] gap-3 p-4 h-[calc(100%-10px)]">
+<div class="grid grid-cols-2 grid-rows-[300px_250px] gap-3 p-4 h-[calc(100%-10px)]">
 
   <div class="col-span-2 bg-white rounded-lg shadow-md p-4 pt-0">
     <!-- Time Range Selector -->
@@ -19,7 +19,8 @@
       [series]="portfolioValueChartOptions.series"
       [chart]="portfolioValueChartOptions.chart"
       [title]="portfolioValueChartOptions.title"
-      [xaxis]="portfolioValueChartOptions.xaxis">
+      [xaxis]="portfolioValueChartOptions.xaxis"
+      [colors]="portfolioValueChartOptions.colors">
     </apx-chart>
   </div>
 
@@ -30,7 +31,8 @@
       [chart]="holdingsChartOptions.chart"
       [labels]="holdingsChartOptions.labels"
       [responsive]="holdingsChartOptions.responsive"
-      [title]="holdingsChartOptions.title">
+      [title]="holdingsChartOptions.title"
+      [colors]="holdingsChartOptions.colors">
     </apx-chart>
   </div>
 
