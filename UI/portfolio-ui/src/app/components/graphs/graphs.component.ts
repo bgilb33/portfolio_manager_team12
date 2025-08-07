@@ -226,7 +226,7 @@ export class GraphsComponent implements OnInit {
           ],
           chart: {
             type: 'line',
-            height: '280px',
+            height: '300px',
             toolbar: {
               show: false
             }
@@ -247,7 +247,15 @@ export class GraphsComponent implements OnInit {
                 fontSize: '12px'
               },
               rotate: -45,
-              rotateAlways: true
+              rotateAlways: true,
+              offsetY: 8,
+              offsetX: 0
+            },
+            axisBorder: {
+              show: false
+            },
+            axisTicks: {
+              show: false
             }
           },
           yaxis: {

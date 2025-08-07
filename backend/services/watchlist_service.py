@@ -21,6 +21,7 @@ def get_watchlist(user_id):
             watchlist_details.append({
                 'symbol': item['symbol'],
                 'name': info.get('longName'),
+                'current_price': info.get('currentPrice'),
                 'open': info.get('open'),
                 'high': info.get('dayHigh'),
                 'low': info.get('dayLow'),
