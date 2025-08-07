@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, Observable, of, tap, throwError } from 'rxjs';
-import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData, StockSearchResult, RefreshResponse, WatchlistData, WatchlistDataResponse } from '../models/portfolio.model';
+import { PortfolioData, ChartData, Transaction, TransactionRequest, TransactionResponse, PriceDataResponse, TransactionsResponse, CashRequest, PriceData, StockSearchResult, RefreshResponse, WatchlistData, WatchlistDataResponse, NewsData } from '../models/portfolio.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupabaseService } from './supabase.service';
 
@@ -274,6 +274,19 @@ export class PortfolioService {
           console.warn('Unexpected error:', error);
         }
         return throwError(() => new Error('Failed to remove from watchlist.'));
+      })
+    );
+  }
+
+  getStockNews(symbol: string, count: number = 10, tab: string = 'news'): Observable<NewsData> {
+    return this.http.get<NewsData>(`${this.host}/market/news/${symbol}?count=${count}&tab=${tab}`, this.httpOptions).pipe(
+      catchError(error => {
+        if (error.status === 500) {
+          console.error('Server error occurred while fetching news:', error.message);
+        } else {
+          console.warn('Unexpected error:', error);
+        }
+        return throwError(() => new Error('Failed to load news.'));
       })
     );
   }

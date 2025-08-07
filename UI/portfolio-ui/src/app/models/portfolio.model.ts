@@ -176,3 +176,28 @@ export interface Recommendation {
   strongBuy: number;
   strongSell: number;
 }
+
+// News Data
+
+export interface NewsArticle {
+  title: string;
+  summary: string;
+  link: string;
+  publisher: string;
+  published: string;
+  type: string;
+  uuid: string;
+}
+
+export interface NewsData {
+  symbol: string;
+  count: number;
+  tab: string;
+  articles: NewsArticle[];
+  last_updated: string;
+  error?: string;
+}
+
+export interface NewsResponse {
+  news_data: NewsData;
+}

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PortfolioService } from '../../services/portfolio.service';
-import { Holding, PortfolioData } from '../../models/portfolio.model';
+import { Holding, PortfolioData, NewsData, NewsArticle } from '../../models/portfolio.model';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -18,6 +18,11 @@ export class HoldingsComponent {
   // Tooltip properties
   tooltipVisible: boolean = false;
   tooltipHolding: Holding | null = null;
+
+  // News properties
+  newsData: NewsData | null = null;
+  isLoadingNews: boolean = false;
+  activeTab: 'details' | 'news' = 'details';
 
   isRefreshing: boolean = false;
 
@@ -111,12 +116,58 @@ export class HoldingsComponent {
     event.stopPropagation();
     this.tooltipHolding = holding;
     this.tooltipVisible = true;
+    this.activeTab = 'details'; // Reset to details tab when opening
   }
 
   // Hide tooltip
   hideTooltip(): void {
     this.tooltipVisible = false;
     this.tooltipHolding = null;
+    this.newsData = null;
+    this.activeTab = 'details';
+  }
+
+  // Load news for a holding
+  loadNews(symbol: string): void {
+    if (!symbol) return;
+    
+    this.isLoadingNews = true;
+    this.newsData = null;
+    
+    this.portfolioService.getStockNews(symbol, 10, 'news').subscribe({
+      next: (data) => {
+        this.newsData = data;
+        this.isLoadingNews = false;
+      },
+      error: (error) => {
+        console.error('Error loading news:', error);
+        this.isLoadingNews = false;
+      }
+    });
+  }
+
+  // Switch to news tab
+  showNews(symbol: string): void {
+    if (!symbol || !this.tooltipHolding) return;
+    this.activeTab = 'news';
+    this.loadNews(symbol);
+  }
+
+  // Switch to details tab
+  showDetails(): void {
+    this.activeTab = 'details';
+  }
+
+  // Format date for news articles
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
   refresh(): void {

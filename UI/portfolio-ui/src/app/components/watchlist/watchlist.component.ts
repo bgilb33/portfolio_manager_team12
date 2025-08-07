@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { PriceData, StockSearchResult, WatchlistData, WatchlistDataResponse } from '../../models/portfolio.model';
+import { PriceData, StockSearchResult, WatchlistData, WatchlistDataResponse, NewsData } from '../../models/portfolio.model';
 import { PortfolioService } from '../../services/portfolio.service';
 
 @Component({
@@ -15,6 +15,12 @@ export class WatchlistComponent {
   searchResults: StockSearchResult[] = [];
   current_stock: PriceData | null = null;
   searchError: boolean = false;
+
+  // News properties
+  newsModalVisible: boolean = false;
+  newsData: NewsData | null = null;
+  isLoadingNews: boolean = false;
+  selectedSymbol: string = '';
 
   constructor (private portfolioService: PortfolioService){}
 
@@ -128,6 +134,52 @@ export class WatchlistComponent {
     setTimeout(() => {
       this.searchError = false;
     }, 3000);
+  }
+
+  // Show news modal for a stock
+  showNews(symbol: string): void {
+    if (!symbol) return;
+    this.selectedSymbol = symbol;
+    this.newsModalVisible = true;
+    this.loadNews(symbol);
+  }
+
+  // Hide news modal
+  hideNews(): void {
+    this.newsModalVisible = false;
+    this.newsData = null;
+    this.selectedSymbol = '';
+  }
+
+  // Load news for a stock
+  loadNews(symbol: string): void {
+    if (!symbol) return;
+    
+    this.isLoadingNews = true;
+    this.newsData = null;
+    
+    this.portfolioService.getStockNews(symbol, 10, 'news').subscribe({
+      next: (data) => {
+        this.newsData = data;
+        this.isLoadingNews = false;
+      },
+      error: (error) => {
+        console.error('Error loading news:', error);
+        this.isLoadingNews = false;
+      }
+    });
+  }
+
+  // Format date for news articles
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
   
 }
