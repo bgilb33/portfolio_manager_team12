@@ -29,6 +29,7 @@ from services.analytics_service import (
 from services.watchlist_service import (
     get_watchlist, add_to_watchlist, remove_from_watchlist
 )
+from services.news_service import get_stock_news
 from services.ai_chat_service import get_ai_chat_service
 
 from utils.database import init_database
@@ -337,6 +338,24 @@ def update_sector_info(user_id):
         })
     except Exception as e:
         logger.error(f"Error in update_sector_info: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# NEWS ENDPOINTS
+
+@app.route('/api/market/news/<symbol>', methods=['GET'])
+def get_stock_news_route(symbol):
+    """Get news for a specific stock symbol"""
+    try:
+        count = request.args.get('count', 10, type=int)
+        tab = request.args.get('tab', 'news')
+        
+        if tab not in ['news', 'all', 'press releases']:
+            return jsonify({'error': 'Invalid tab parameter. Must be "news", "all", or "press releases"'}), 400
+        
+        news_data = get_stock_news(symbol, count=count, tab=tab)
+        return jsonify(news_data)
+    except Exception as e:
+        logger.error(f"Error in get_stock_news_route: {e}")
         return jsonify({'error': str(e)}), 500
 
 # AI CHAT ENDPOINTS

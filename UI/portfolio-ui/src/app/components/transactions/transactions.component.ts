@@ -35,7 +35,9 @@ export class TransactionsComponent implements OnInit {
 
   ngOnInit(): void {
     this.portfolioService.portfolio$.subscribe(data => {
-      this.portfolio = data;
+      if (data) {
+        this.portfolio = data;
+      }
     })
 
     this.portfolioService.userIdReady$.subscribe(ready => {
@@ -45,6 +47,12 @@ export class TransactionsComponent implements OnInit {
         })
       }
     })
+  }
+
+  refresh(): void {
+    this.portfolioService.getUserTransactions().subscribe(data => {
+      this.transactions = data.transactions;
+    });
   }
 
   onSearchChange(): void {
@@ -130,6 +138,7 @@ export class TransactionsComponent implements OnInit {
         },
         error: (error) => {
           console.error("Trade Error:", error);
+          // Extract specific error message from backend
           if (error.error && error.error.error) {
             this.statusMessage = error.error.error;
           } else if (error.error && error.error.detail) {
@@ -161,6 +170,11 @@ export class TransactionsComponent implements OnInit {
       this.statusType = 'success';
       this.portfolioService.getPortfolio().subscribe();
       this.portfolioService.getTimeSeriesData().subscribe();
+      
+      // Refresh transaction history
+      this.portfolioService.getUserTransactions().subscribe(data => {
+        this.transactions = data.transactions;
+      });
       
       // Update sector information for new stocks
       this.portfolioService.updateSectorInfo().subscribe({
@@ -222,6 +236,11 @@ export class TransactionsComponent implements OnInit {
             this.cashStatusMessage = 'Transaction submitted successfully.';
             this.cashStatusType = 'success';
             this.portfolioService.getPortfolio().subscribe();
+            
+            // Refresh transaction history
+            this.portfolioService.getUserTransactions().subscribe(data => {
+              this.transactions = data.transactions;
+            });
           }
           else {
             this.cashStatusMessage = 'Trade failed. Please try again.';
@@ -230,6 +249,7 @@ export class TransactionsComponent implements OnInit {
         },
         error: (error) => {
           console.error("Cash Transaction Error:", error);
+          // Extract specific error message from backend
           if (error.error && error.error.error) {
             this.cashStatusMessage = error.error.error;
           } else if (error.error && error.error.detail) {

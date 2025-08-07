@@ -23,6 +23,10 @@ export class MarketOverviewComponent {
     this.portfolioService.getMajorIndices();  // Initiates async price fetch
   }
 
+  refresh(): void {
+    this.portfolioService.getMajorIndices();  // Refresh market indices
+  }
+
   formatNumber(value: number | string): string {
     return typeof value === 'number' ? `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     : value;
