@@ -130,6 +130,7 @@ export class TransactionsComponent implements OnInit {
         },
         error: (error) => {
           console.error("Trade Error:", error);
+          // Extract specific error message from backend
           if (error.error && error.error.error) {
             this.statusMessage = error.error.error;
           } else if (error.error && error.error.detail) {
@@ -230,6 +231,7 @@ export class TransactionsComponent implements OnInit {
         },
         error: (error) => {
           console.error("Cash Transaction Error:", error);
+          // Extract specific error message from backend
           if (error.error && error.error.error) {
             this.cashStatusMessage = error.error.error;
           } else if (error.error && error.error.detail) {

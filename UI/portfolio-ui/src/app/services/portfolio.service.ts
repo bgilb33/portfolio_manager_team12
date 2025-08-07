@@ -143,9 +143,8 @@ export class PortfolioService {
           console.log('Unexpected error:', error.message);
         }
 
-        return throwError(() => 
-          new Error('Failed to create transaction.')
-        )
+        // Preserve the original error message from the backend
+        return throwError(() => error)
       })
     );
   }
@@ -160,9 +159,8 @@ export class PortfolioService {
           console.log('Unexpected error:', error.message);
         }
 
-        return throwError(() => 
-          new Error('Failed to create transaction.')
-        )
+        // Preserve the original error message from the backend
+        return throwError(() => error)
       })      
     );
   }
