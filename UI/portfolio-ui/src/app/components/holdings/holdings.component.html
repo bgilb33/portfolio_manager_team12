@@ -31,7 +31,7 @@
     <h3 class="text-sm font-medium text-white">All Holdings</h3>
   </div>
 
-  <div class="flex flex-col overflow-y-auto flex-1 mb-4">
+  <div class="flex flex-col overflow-y-auto max-h-60 mb-4">
     <div *ngIf="holdings.length === 0" class="flex justify-center items-center py-8 text-gray-500">
       <span>No stock holdings</span>
     </div>
@@ -56,8 +56,8 @@
   </div>
 
   <!-- Your Gainers Section -->
-  <div class="mb-4">
-    <div class="flex items-center justify-center h-8 mb-2 bg-green-600 rounded">
+  <div class="mb-4 pt-6">
+    <div class="flex items-center justify-center h-8 mb-2 bg-blue-600 rounded">
       <h3 class="text-sm font-medium text-white">Your Gainers</h3>
     </div>
     <div class="flex flex-col overflow-y-auto max-h-24">
@@ -84,7 +84,7 @@
 
   <!-- Your Losers Section -->
   <div class="mb-4">
-    <div class="flex items-center justify-center h-8 mb-2 bg-red-600 rounded">
+    <div class="flex items-center justify-center h-8 mb-2 bg-blue-600 rounded">
       <h3 class="text-sm font-medium text-white">Your Losers</h3>
     </div>
     <div class="flex flex-col overflow-y-auto max-h-24">
