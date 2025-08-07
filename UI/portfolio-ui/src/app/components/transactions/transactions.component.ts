@@ -35,7 +35,9 @@ export class TransactionsComponent implements OnInit {
 
   ngOnInit(): void {
     this.portfolioService.portfolio$.subscribe(data => {
-      this.portfolio = data;
+      if (data) {
+        this.portfolio = data;
+      }
     })
 
     this.portfolioService.userIdReady$.subscribe(ready => {
@@ -45,6 +47,12 @@ export class TransactionsComponent implements OnInit {
         })
       }
     })
+  }
+
+  refresh(): void {
+    this.portfolioService.getUserTransactions().subscribe(data => {
+      this.transactions = data.transactions;
+    });
   }
 
   onSearchChange(): void {

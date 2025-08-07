@@ -22,6 +22,10 @@ export class WatchlistComponent {
     this.loadWatchlist()
   }
 
+  refresh(): void {
+    this.loadWatchlist();
+  }
+
   loadWatchlist(): void{
     this.portfolioService.getWatchlist().subscribe({
       next: (res: WatchlistDataResponse) => {

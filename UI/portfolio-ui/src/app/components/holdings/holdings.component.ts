@@ -14,7 +14,10 @@ export class HoldingsComponent {
   holdings : Holding[] = [];
   cashBalance: number = 0;
   totalMarketValue: number = 0;
-  selectedHolding: Holding | null = null;
+  
+  // Tooltip properties
+  tooltipVisible: boolean = false;
+  tooltipHolding: Holding | null = null;
 
   isRefreshing: boolean = false;
 
@@ -30,11 +33,6 @@ export class HoldingsComponent {
         );
         this.cashBalance = data.summary.cash_balance;
         this.totalMarketValue = data.summary.total_market_value;
-        if (this.holdings.length > 0) {
-          this.selectedHolding = this.holdings[0];
-        } else {
-          this.selectedHolding = null;
-        }
       }
     })
   }
@@ -84,8 +82,41 @@ export class HoldingsComponent {
     return holding.quantity * holding.average_cost;
   }
 
-  selectStock(index: number): void {
-    this.selectedHolding = this.holdings[index];
+  // Helper to calculate percent change from average cost to current price
+  getCostBasisPercentChange(holding: Holding): number | null {
+    if (holding.average_cost && holding.current_price && holding.average_cost !== 0) {
+      return ((holding.current_price - holding.average_cost) / holding.average_cost) * 100;
+    }
+    return null;
+  }
+
+  // Get holdings with positive percent change from cost basis
+  getGainers(): Holding[] {
+    return this.holdings
+      .filter(h => this.getCostBasisPercentChange(h) !== null && this.getCostBasisPercentChange(h)! > 0)
+      .sort((a, b) => (this.getCostBasisPercentChange(b) || 0) - (this.getCostBasisPercentChange(a) || 0))
+      .slice(0, 3);
+  }
+
+  // Get holdings with negative percent change from cost basis
+  getLosers(): Holding[] {
+    return this.holdings
+      .filter(h => this.getCostBasisPercentChange(h) !== null && this.getCostBasisPercentChange(h)! < 0)
+      .sort((a, b) => (this.getCostBasisPercentChange(a) || 0) - (this.getCostBasisPercentChange(b) || 0))
+      .slice(0, 3);
+  }
+
+  // Show tooltip for a holding
+  showTooltip(event: Event, holding: Holding): void {
+    event.stopPropagation();
+    this.tooltipHolding = holding;
+    this.tooltipVisible = true;
+  }
+
+  // Hide tooltip
+  hideTooltip(): void {
+    this.tooltipVisible = false;
+    this.tooltipHolding = null;
   }
 
   refresh(): void {

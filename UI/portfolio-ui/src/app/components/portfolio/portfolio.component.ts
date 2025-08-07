@@ -5,6 +5,9 @@ import { forkJoin } from 'rxjs';
 import { ChatComponent } from '../chat/chat.component';
 import { ChatService } from '../../services/chat.service';
 import { environment } from '../../../environments/environment';
+import { WatchlistComponent } from '../watchlist/watchlist.component';
+import { MarketOverviewComponent } from '../market-overview/market-overview.component';
+import { TransactionsComponent } from '../transactions/transactions.component';
 
 @Component({
   selector: 'app-portfolio',
@@ -14,7 +17,11 @@ import { environment } from '../../../environments/environment';
 export class PortfolioComponent {
   isLoading = true;
   showChat = true;
+  isRefreshing = false;
   @ViewChild(ChatComponent) chatComponent!: ChatComponent;
+  @ViewChild(WatchlistComponent) watchlistComponent!: WatchlistComponent;
+  @ViewChild(MarketOverviewComponent) marketOverviewComponent!: MarketOverviewComponent;
+  @ViewChild(TransactionsComponent) transactionsComponent!: TransactionsComponent;
 
   constructor(
     private portfolioService: PortfolioService,
@@ -96,5 +103,48 @@ export class PortfolioComponent {
         console.error('Chat component not found!');
       }
     }, 100);
+  }
+
+  refreshAll(): void {
+    this.isRefreshing = true;
+    
+    // Refresh all data components
+    this.portfolioService.refreshHoldings().subscribe({
+      next: (data) => {
+        if (data) {
+          // Refresh portfolio, time series, and watchlist data
+          forkJoin([
+            this.portfolioService.getPortfolio(),
+            this.portfolioService.getTimeSeriesData(),
+            this.portfolioService.getWatchlist()
+          ]).subscribe({
+            next: () => {
+              console.log('All data refreshed successfully');
+              
+              // Refresh child components
+              if (this.watchlistComponent) {
+                this.watchlistComponent.refresh();
+              }
+              if (this.marketOverviewComponent) {
+                this.marketOverviewComponent.refresh();
+              }
+              if (this.transactionsComponent) {
+                this.transactionsComponent.refresh();
+              }
+              
+              this.isRefreshing = false;
+            },
+            error: (error) => {
+              console.error('Error refreshing data:', error);
+              this.isRefreshing = false;
+            }
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error refreshing holdings:', error);
+        this.isRefreshing = false;
+      }
+    });
   }
 }
