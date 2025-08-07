@@ -152,11 +152,11 @@ class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-5
       </div>
       
       <div *ngIf="!isLoadingNews && newsData?.error" class="text-center py-8 text-red-500">
-        <span>Error loading news: {{ newsData.error }}</span>
+        <span>Error loading news: {{ newsData!.error }}</span>
       </div>
       
-      <div *ngIf="!isLoadingNews && newsData?.articles?.length > 0" class="space-y-4">
-        <div *ngFor="let article of newsData.articles" class="border-b border-gray-200 pb-4 last:border-b-0">
+      <div *ngIf="!isLoadingNews && newsData!.articles!.length > 0" class="space-y-4">
+        <div *ngFor="let article of newsData!.articles" class="border-b border-gray-200 pb-4 last:border-b-0">
           <div class="flex justify-between items-start mb-2">
             <h4 class="font-semibold text-gray-800 text-sm leading-tight">
               <a [href]="article.link" target="_blank" class="hover:text-blue-600">
