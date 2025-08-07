@@ -163,6 +163,11 @@ export class TransactionsComponent implements OnInit {
       this.portfolioService.getPortfolio().subscribe();
       this.portfolioService.getTimeSeriesData().subscribe();
       
+      // Refresh transaction history
+      this.portfolioService.getUserTransactions().subscribe(data => {
+        this.transactions = data.transactions;
+      });
+      
       // Update sector information for new stocks
       this.portfolioService.updateSectorInfo().subscribe({
         next: (response) => {
@@ -223,6 +228,11 @@ export class TransactionsComponent implements OnInit {
             this.cashStatusMessage = 'Transaction submitted successfully.';
             this.cashStatusType = 'success';
             this.portfolioService.getPortfolio().subscribe();
+            
+            // Refresh transaction history
+            this.portfolioService.getUserTransactions().subscribe(data => {
+              this.transactions = data.transactions;
+            });
           }
           else {
             this.cashStatusMessage = 'Trade failed. Please try again.';
