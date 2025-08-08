@@ -41,6 +41,7 @@ export class HoldingsComponent implements OnInit, OnDestroy {
     // Subscribe to portfolio data
     const portfolioSub = this.portfolioService.portfolio$.subscribe(data => {
       if (data){
+        const oldSymbols = this.holdings.map(h => h.symbol);
         this.portfolio = data;
         // Filter out holdings with zero quantity and cash holdings
         this.holdings = data.holdings.filter(holding => 
@@ -49,9 +50,24 @@ export class HoldingsComponent implements OnInit, OnDestroy {
         this.cashBalance = data.summary.cash_balance;
         this.totalMarketValue = data.summary.total_market_value;
         
-        // Start price streaming once we have holdings
-        if (this.holdings.length > 0 && !this.isStreaming) {
-          this.startPriceStreaming();
+        const newSymbols = this.holdings.map(h => h.symbol);
+        
+        // Check if symbols have changed (new holdings added or removed)
+        const symbolsChanged = oldSymbols.length !== newSymbols.length || 
+                              !oldSymbols.every(symbol => newSymbols.includes(symbol));
+        
+        // Start or restart price streaming if we have holdings
+        if (this.holdings.length > 0) {
+          if (!this.isStreaming || symbolsChanged) {
+            console.log('Holdings symbols changed, restarting price streaming...', { oldSymbols, newSymbols });
+            this.stopPriceStreaming();
+            setTimeout(() => {
+              this.startPriceStreaming();
+            }, 500); // Small delay to ensure cleanup
+          }
+        } else if (this.isStreaming) {
+          // No holdings, stop streaming
+          this.stopPriceStreaming();
         }
       }
     });

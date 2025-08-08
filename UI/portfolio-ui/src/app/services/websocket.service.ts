@@ -191,10 +191,11 @@ export class WebSocketService {
       this.connect();
       
       // Wait for connection then subscribe
-      this.connected$.subscribe(connected => {
+      const connectionSub = this.connected$.subscribe(connected => {
         if (connected && this.userID) {
           setTimeout(() => {
             this.subscribeToPrices();
+            connectionSub.unsubscribe(); // Clean up this one-time subscription
           }, 500); // Small delay to ensure connection is fully established
         }
       });
@@ -293,10 +294,11 @@ export class WebSocketService {
     if (!this.isConnected()) {
       this.connect();
       
-      this.connected$.subscribe(connected => {
+      const connectionSub = this.connected$.subscribe(connected => {
         if (connected && this.userID) {
           setTimeout(() => {
             this.subscribeToWatchlist(symbols);
+            connectionSub.unsubscribe(); // Clean up this one-time subscription
           }, 500);
         }
       });

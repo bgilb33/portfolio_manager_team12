@@ -54,13 +54,29 @@ export class WatchlistComponent implements OnInit, OnDestroy {
   }
 
   loadWatchlist(): void{
+    const oldSymbols = this.watchlist.map(item => item.symbol);
+    
     this.portfolioService.getWatchlist().subscribe({
       next: (res: WatchlistDataResponse) => {
         this.watchlist = res.watchlist;
+        const newSymbols = this.watchlist.map(item => item.symbol);
         
-        // Start streaming for current watchlist symbols
+        // Check if symbols have changed
+        const symbolsChanged = oldSymbols.length !== newSymbols.length || 
+                              !oldSymbols.every(symbol => newSymbols.includes(symbol));
+        
+        // Restart streaming if symbols changed or start if not streaming
         if (this.watchlist.length > 0) {
-          this.startWatchlistStreaming();
+          if (!this.isStreamingWatchlist || symbolsChanged) {
+            console.log('Watchlist symbols changed, restarting streaming...', { oldSymbols, newSymbols });
+            this.stopWatchlistStreaming();
+            setTimeout(() => {
+              this.startWatchlistStreaming();
+            }, 500); // Small delay to ensure cleanup
+          }
+        } else if (this.isStreamingWatchlist) {
+          // No watchlist items, stop streaming
+          this.stopWatchlistStreaming();
         }
       },
       error: (err) => {
@@ -74,21 +90,19 @@ export class WatchlistComponent implements OnInit, OnDestroy {
     this.portfolioService.addToWatchlist(this.newSymbol.trim().toUpperCase()).subscribe({
       next: () => {
         this.newSymbol = '';
-        this.loadWatchlist();
+        this.current_stock = null;
+        this.loadWatchlist(); // This will automatically restart streaming with new symbols
       },
       error: () => {
         console.log("error in watchlist2");
       }
     });
-
-    this.newSymbol = '';
-    this.current_stock = null;
   }
 
   removeSymbol(symbol: string) {
     this.portfolioService.removeFromWatchlist(symbol).subscribe({
       next: () => {
-        this.loadWatchlist();
+        this.loadWatchlist(); // This will automatically restart streaming with updated symbols
       },
       error: () => {
         console.log("error in watchlist3");
