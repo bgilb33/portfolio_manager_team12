@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
 from datetime import datetime, timezone
 import logging
@@ -33,11 +34,20 @@ from services.news_service import get_stock_news
 from services.ai_chat_service import get_ai_chat_service
 
 from utils.database import init_database
+from services.websocket_service import init_price_streaming_service, get_price_streaming_service
 load_dotenv()
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, cors_allowed_origins="*")
+
+# Initialize SocketIO
+socketio = SocketIO(
+    app, 
+    cors_allowed_origins="*",
+    logger=True,
+    engineio_logger=True
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -47,6 +57,10 @@ try:
     logger.info("Database initialized successfully")
 except Exception as e:
     logger.error(f"Failed to initialize database: {e}")
+
+# Initialize WebSocket price streaming service
+price_service = init_price_streaming_service(socketio)
+logger.info("Price streaming service initialized")
 
 
 # ERROR HANDLERS
@@ -474,14 +488,241 @@ def create_portfolio_snapshot(user_id):
         logger.error(f"Error in create_portfolio_snapshot: {e}")
         return jsonify({'error': str(e)}), 500
 
+# WEBSOCKET EVENT HANDLERS
+
+@socketio.on('connect')
+def handle_connect(auth):
+    """Handle client connection"""
+    try:
+        logger.info(f"Client connected: {request.sid}")
+        emit('connected', {'status': 'Connected to price streaming service'})
+    except Exception as e:
+        logger.error(f"Error handling client connection: {e}")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    """Handle client disconnection"""
+    try:
+        logger.info(f"Client disconnected: {request.sid}")
+        # Note: User-specific cleanup is handled in unsubscribe_prices
+    except Exception as e:
+        logger.error(f"Error handling client disconnection: {e}")
+
+@socketio.on('subscribe_prices')
+def handle_subscribe_prices(data):
+    """Handle price subscription request"""
+    try:
+        user_id = data.get('user_id')
+        if not user_id:
+            emit('error', {'message': 'User ID required'})
+            return
+        
+        # Join user-specific room
+        join_room(f"user_{user_id}")
+        
+        # Subscribe to price updates
+        service = get_price_streaming_service()
+        if service:
+            success = service.subscribe_user(user_id)
+            if success:
+                emit('subscription_status', {
+                    'status': 'subscribed',
+                    'user_id': user_id,
+                    'message': 'Successfully subscribed to price updates'
+                })
+                logger.info(f"User {user_id} subscribed to price updates")
+            else:
+                emit('error', {'message': 'Failed to subscribe to price updates'})
+        else:
+            emit('error', {'message': 'Price streaming service not available'})
+            
+    except Exception as e:
+        logger.error(f"Error subscribing to prices: {e}")
+        emit('error', {'message': 'Failed to subscribe to price updates'})
+
+@socketio.on('unsubscribe_prices')
+def handle_unsubscribe_prices(data):
+    """Handle price unsubscription request"""
+    try:
+        user_id = data.get('user_id')
+        if not user_id:
+            emit('error', {'message': 'User ID required'})
+            return
+        
+        # Leave user-specific room
+        leave_room(f"user_{user_id}")
+        
+        # Unsubscribe from price updates
+        service = get_price_streaming_service()
+        if service:
+            service.unsubscribe_user(user_id)
+            emit('subscription_status', {
+                'status': 'unsubscribed',
+                'user_id': user_id,
+                'message': 'Successfully unsubscribed from price updates'
+            })
+            logger.info(f"User {user_id} unsubscribed from price updates")
+        
+    except Exception as e:
+        logger.error(f"Error unsubscribing from prices: {e}")
+        emit('error', {'message': 'Failed to unsubscribe from price updates'})
+
+@socketio.on('get_stream_status')
+def handle_get_stream_status():
+    """Get current streaming status"""
+    try:
+        service = get_price_streaming_service()
+        if service:
+            status = service.get_stream_status()
+            emit('stream_status', status)
+        else:
+            emit('error', {'message': 'Price streaming service not available'})
+    except Exception as e:
+        logger.error(f"Error getting stream status: {e}")
+        emit('error', {'message': 'Failed to get stream status'})
+
+@socketio.on('subscribe_watchlist')
+def handle_subscribe_watchlist(data):
+    """Handle watchlist subscription request"""
+    try:
+        user_id = data.get('user_id')
+        symbols = data.get('symbols', [])
+        
+        if not user_id:
+            emit('error', {'message': 'User ID required'})
+            return
+        
+        if not symbols:
+            emit('error', {'message': 'Symbols list required'})
+            return
+        
+        # Join user-specific room
+        join_room(f"user_{user_id}")
+        
+        # Subscribe to watchlist updates
+        service = get_price_streaming_service()
+        if service:
+            success = service.subscribe_watchlist(user_id, symbols)
+            if success:
+                emit('watchlist_subscription_status', {
+                    'status': 'subscribed',
+                    'user_id': user_id,
+                    'symbols': symbols,
+                    'message': 'Successfully subscribed to watchlist updates'
+                })
+                logger.info(f"User {user_id} subscribed to watchlist: {symbols}")
+            else:
+                emit('error', {'message': 'Failed to subscribe to watchlist updates'})
+        else:
+            emit('error', {'message': 'Price streaming service not available'})
+            
+    except Exception as e:
+        logger.error(f"Error subscribing to watchlist: {e}")
+        emit('error', {'message': 'Failed to subscribe to watchlist updates'})
+
+@socketio.on('unsubscribe_watchlist')
+def handle_unsubscribe_watchlist(data):
+    """Handle watchlist unsubscription request"""
+    try:
+        user_id = data.get('user_id')
+        if not user_id:
+            emit('error', {'message': 'User ID required'})
+            return
+        
+        # Unsubscribe from watchlist updates
+        service = get_price_streaming_service()
+        if service:
+            service.unsubscribe_watchlist(user_id)
+            emit('watchlist_subscription_status', {
+                'status': 'unsubscribed',
+                'user_id': user_id,
+                'message': 'Successfully unsubscribed from watchlist updates'
+            })
+            logger.info(f"User {user_id} unsubscribed from watchlist")
+        
+    except Exception as e:
+        logger.error(f"Error unsubscribing from watchlist: {e}")
+        emit('error', {'message': 'Failed to unsubscribe from watchlist updates'})
+
+@socketio.on('subscribe_market_indices')
+def handle_subscribe_market_indices(data):
+    """Handle market indices subscription request"""
+    try:
+        user_id = request.sid  # Use session ID if no user_id provided
+        if 'user_id' in data:
+            user_id = data['user_id']
+        
+        # Join user-specific room
+        join_room(f"user_{user_id}")
+        
+        # Subscribe to market indices updates
+        service = get_price_streaming_service()
+        if service:
+            success = service.subscribe_market_indices(user_id)
+            if success:
+                emit('market_indices_subscription_status', {
+                    'status': 'subscribed',
+                    'user_id': user_id,
+                    'message': 'Successfully subscribed to market indices updates'
+                })
+                logger.info(f"User {user_id} subscribed to market indices")
+            else:
+                emit('error', {'message': 'Failed to subscribe to market indices updates'})
+        else:
+            emit('error', {'message': 'Price streaming service not available'})
+            
+    except Exception as e:
+        logger.error(f"Error subscribing to market indices: {e}")
+        emit('error', {'message': 'Failed to subscribe to market indices updates'})
+
+@socketio.on('unsubscribe_market_indices')
+def handle_unsubscribe_market_indices(data=None):
+    """Handle market indices unsubscription request"""
+    try:
+        user_id = request.sid  # Use session ID if no user_id provided
+        if data and 'user_id' in data:
+            user_id = data['user_id']
+        
+        # Unsubscribe from market indices updates
+        service = get_price_streaming_service()
+        if service:
+            service.unsubscribe_market_indices(user_id)
+            emit('market_indices_subscription_status', {
+                'status': 'unsubscribed',
+                'user_id': user_id,
+                'message': 'Successfully unsubscribed from market indices updates'
+            })
+            logger.info(f"User {user_id} unsubscribed from market indices")
+        
+    except Exception as e:
+        logger.error(f"Error unsubscribing from market indices: {e}")
+        emit('error', {'message': 'Failed to unsubscribe from market indices updates'})
+
+# REST API endpoint for manual price refresh (fallback)
+@app.route('/api/market/prices/refresh/<user_id>', methods=['POST'])
+def refresh_holdings_prices(user_id):
+    """Manual price refresh endpoint (fallback for WebSocket)"""
+    try:
+        updated_count = refresh_all_prices(user_id)
+        return jsonify({
+            'success': True,
+            'message': f'Refreshed prices for {updated_count} symbols',
+            'updated_count': updated_count
+        })
+    except Exception as e:
+        logger.error(f"Error refreshing holdings for user {user_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
 # RUN APPLICATION
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 2000))
     debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
     
-    app.run(
+    socketio.run(
+        app,
         host='0.0.0.0',
         port=port,
-        debug=debug
+        debug=debug,
+        allow_unsafe_werkzeug=True
     )

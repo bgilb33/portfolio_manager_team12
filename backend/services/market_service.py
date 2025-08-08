@@ -90,11 +90,12 @@ def fetch_current_price(symbol: str):
         info = ticker.info
         
         current_price = info.get('currentPrice') or info.get('regularMarketPrice')
-        if not current_price:
-            logger.warning(f"No current price found for {symbol}")
+        previous_close = info.get('previousClose')
+        
+        if not current_price or not previous_close:
+            logger.warning(f"Missing price data for {symbol}: current_price={current_price}, previous_close={previous_close}")
             return None
         
-        previous_close = info.get('previousClose', current_price)
         day_change = current_price - previous_close
         day_change_percent = (day_change / previous_close * 100) if previous_close else 0
         
@@ -191,7 +192,7 @@ def get_current_price(symbol: str, force_fresh: bool = False):
         return None
 
 def refresh_all_prices(user_id: str):
-    """Refresh prices for user's portfolio holdings"""
+    """Refresh prices for user's portfolio holdings with fresh day change data"""
     try:
         from services.holdings_service import get_user_symbols
         
@@ -205,15 +206,17 @@ def refresh_all_prices(user_id: str):
         updated_count = 0
         failed_symbols = []
         
+        logger.info(f"Starting price refresh for {len(symbols)} symbols: {symbols}")
+        
         for symbol in symbols:
             try:
-                # Fetch current price from yfinance
+                # Fetch current price from yfinance with day change calculation
                 price_data = fetch_current_price(symbol)
                 if price_data:
                     # Cache the price data
                     cache_price(symbol, price_data)
                     updated_count += 1
-                    logger.info(f"Updated price for {symbol}: ${price_data['current_price']}")
+                    logger.info(f"Updated {symbol}: ${price_data['current_price']}, day_change={price_data.get('day_change', 0)}, day_change_percent={price_data.get('day_change_percent', 0)}%")
                 else:
                     failed_symbols.append(symbol)
                     logger.warning(f"Failed to get price for {symbol}")

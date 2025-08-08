@@ -10,6 +10,10 @@ supabase>=2.0.2
 # Market data
 yfinance[nospam]
 
+# WebSocket support
+flask-socketio==5.3.6
+python-socketio==5.10.0
+
 # Data manipulation (for analytics)
 pandas==2.1.4
 numpy==1.24.3

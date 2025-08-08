@@ -1,13 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { PriceData, StockSearchResult, WatchlistData, WatchlistDataResponse, NewsData } from '../../models/portfolio.model';
 import { PortfolioService } from '../../services/portfolio.service';
+import { WebSocketService, PriceUpdate } from '../../services/websocket.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-watchlist',
   templateUrl: './watchlist.component.html',
   styleUrl: './watchlist.component.css'
 })
-export class WatchlistComponent {
+export class WatchlistComponent implements OnInit, OnDestroy {
   watchlist: WatchlistData[] = [];
   newSymbol: string = "";
   editModal: boolean = false;
@@ -22,10 +24,29 @@ export class WatchlistComponent {
   isLoadingNews: boolean = false;
   selectedSymbol: string = '';
 
-  constructor (private portfolioService: PortfolioService){}
+  // WebSocket properties
+  isStreamingWatchlist: boolean = false;
+  streamingError: string | null = null;
+  lastWatchlistUpdate: Date | null = null;
+  
+  private subscriptions: Subscription[] = [];
+
+  constructor (
+    private portfolioService: PortfolioService,
+    private webSocketService: WebSocketService
+  ){}
 
   ngOnInit(): void{
-    this.loadWatchlist()
+    this.loadWatchlist();
+    this.setupWebSocketSubscriptions();
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    
+    // Stop streaming
+    this.stopWatchlistStreaming();
   }
 
   refresh(): void {
@@ -36,6 +57,11 @@ export class WatchlistComponent {
     this.portfolioService.getWatchlist().subscribe({
       next: (res: WatchlistDataResponse) => {
         this.watchlist = res.watchlist;
+        
+        // Start streaming for current watchlist symbols
+        if (this.watchlist.length > 0) {
+          this.startWatchlistStreaming();
+        }
       },
       error: (err) => {
         console.log("error in watchlist" + err);
@@ -181,5 +207,89 @@ export class WatchlistComponent {
       minute: '2-digit'
     });
   }
+
+  // WebSocket methods
+  setupWebSocketSubscriptions(): void {
+    // Subscribe to watchlist price updates
+    const watchlistUpdateSub = this.webSocketService.getWatchlistUpdates().subscribe(update => {
+      if (update) {
+        this.handleWatchlistPriceUpdate(update);
+        this.lastWatchlistUpdate = new Date();
+      }
+    });
+    this.subscriptions.push(watchlistUpdateSub);
+
+    // Subscribe to WebSocket errors
+    const errorSub = this.webSocketService.errors$.subscribe(error => {
+      if (error) {
+        this.streamingError = error;
+        console.error('WebSocket error:', error);
+      }
+    });
+    this.subscriptions.push(errorSub);
+
+    // Subscribe to watchlist subscription status
+    const statusSub = this.webSocketService.watchlistSubscriptionStatus$.subscribe(status => {
+      if (status) {
+        console.log('Watchlist subscription status:', status);
+        this.isStreamingWatchlist = status.status === 'subscribed';
+      }
+    });
+    this.subscriptions.push(statusSub);
+  }
+
+  startWatchlistStreaming(): void {
+    if (!this.isStreamingWatchlist && this.watchlist.length > 0) {
+      const symbols = this.watchlist.map(item => item.symbol);
+      console.log('Starting watchlist streaming for symbols:', symbols);
+      this.webSocketService.startWatchlistStreaming(symbols);
+    }
+  }
+
+  stopWatchlistStreaming(): void {
+    if (this.isStreamingWatchlist) {
+      console.log('Stopping watchlist streaming...');
+      this.webSocketService.stopWatchlistStreaming();
+      this.isStreamingWatchlist = false;
+    }
+  }
+
+  handleWatchlistPriceUpdate(update: PriceUpdate): void {
+    console.log('Processing watchlist price update:', update);
+    
+    // Find the watchlist item that matches this symbol
+    const itemIndex = this.watchlist.findIndex(item => item.symbol === update.symbol);
+    
+    if (itemIndex !== -1) {
+      // Update the watchlist item with new price data
+      const item = this.watchlist[itemIndex];
+      const oldPrice = item.current_price;
+      
+      // Update price fields
+      item.current_price = update.price_data.current_price;
+      item.day_change = update.price_data.day_change;
+      item.day_change_percent = update.price_data.day_change_percent;
+      item.previousClose = update.price_data.previous_close;
+      item.last_updated = update.price_data.last_updated;
+      
+      // Update the watchlist array to trigger change detection
+      this.watchlist = [...this.watchlist];
+      
+      console.log(`Updated watchlist ${update.symbol}: $${oldPrice} → $${item.current_price} (${item.day_change_percent?.toFixed(2) || 0}%)`);
+    }
+  }
+
+  // Toggle streaming method for UI
+  toggleWatchlistStreaming(): void {
+    if (this.isStreamingWatchlist) {
+      this.stopWatchlistStreaming();
+    } else {
+      this.startWatchlistStreaming();
+    }
+  }
+
+
+
+
   
 }

@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { PortfolioService } from '../../services/portfolio.service';
+import { WebSocketService, PriceUpdate } from '../../services/websocket.service';
 import { Holding, PortfolioData, NewsData, NewsArticle } from '../../models/portfolio.model';
-import { forkJoin } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-holdings',
   templateUrl: './holdings.component.html',
   styleUrl: './holdings.component.css'
 })
-export class HoldingsComponent {
+export class HoldingsComponent implements OnInit, OnDestroy {
 
   portfolio: PortfolioData | null = null;
   holdings : Holding[] = [];
@@ -24,12 +25,21 @@ export class HoldingsComponent {
   isLoadingNews: boolean = false;
   activeTab: 'details' | 'news' = 'details';
 
-  isRefreshing: boolean = false;
+  // WebSocket properties
+  isStreaming: boolean = false;
+  streamingError: string | null = null;
+  lastPriceUpdate: Date | null = null;
+  
+  private subscriptions: Subscription[] = [];
 
-  constructor(private portfolioService: PortfolioService) { }
+  constructor(
+    private portfolioService: PortfolioService,
+    private webSocketService: WebSocketService
+  ) { }
 
   ngOnInit(): void {
-    this.portfolioService.portfolio$.subscribe(data => {
+    // Subscribe to portfolio data
+    const portfolioSub = this.portfolioService.portfolio$.subscribe(data => {
       if (data){
         this.portfolio = data;
         // Filter out holdings with zero quantity and cash holdings
@@ -38,8 +48,68 @@ export class HoldingsComponent {
         );
         this.cashBalance = data.summary.cash_balance;
         this.totalMarketValue = data.summary.total_market_value;
+        
+        // Start price streaming once we have holdings
+        if (this.holdings.length > 0 && !this.isStreaming) {
+          this.startPriceStreaming();
+        }
       }
-    })
+    });
+    this.subscriptions.push(portfolioSub);
+    
+    // Subscribe to WebSocket connection status
+    const connectionSub = this.webSocketService.connected$.subscribe(connected => {
+      console.log('WebSocket connection status:', connected);
+      if (connected) {
+        this.streamingError = null;
+      }
+    });
+    this.subscriptions.push(connectionSub);
+    
+    // Subscribe to price updates
+    const priceUpdateSub = this.webSocketService.getPriceUpdates().subscribe(update => {
+      if (update) {
+        this.handlePriceUpdate(update);
+        this.lastPriceUpdate = new Date();
+      }
+    });
+    this.subscriptions.push(priceUpdateSub);
+    
+    // Subscribe to WebSocket errors
+    const errorSub = this.webSocketService.errors$.subscribe(error => {
+      if (error) {
+        this.streamingError = error;
+        console.error('WebSocket error:', error);
+      }
+    });
+    this.subscriptions.push(errorSub);
+    
+    // Subscribe to subscription status
+    const statusSub = this.webSocketService.subscriptionStatus$.subscribe(status => {
+      if (status) {
+        console.log('Subscription status update:', status);
+        this.isStreaming = status.status === 'subscribed';
+      }
+    });
+    this.subscriptions.push(statusSub);
+    
+    // Trigger initial portfolio fetch (like other components do)
+    this.portfolioService.getPortfolio().subscribe({
+      next: (data) => {
+        console.log('Portfolio data loaded successfully');
+      },
+      error: (error) => {
+        console.error('Error loading portfolio:', error);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    
+    // Stop price streaming
+    this.stopPriceStreaming();
   }
 
   getNetWorth(): number {
@@ -170,18 +240,68 @@ export class HoldingsComponent {
     });
   }
 
-  refresh(): void {
-    this.isRefreshing = true;
-    this.portfolioService.refreshHoldings().subscribe(data => {
-      if (data) {
-        forkJoin([
-          this.portfolioService.getPortfolio(),
-          this.portfolioService.getTimeSeriesData(),
-          this.portfolioService.getWatchlist()
-        ]).subscribe(() => {
-          this.isRefreshing = false;
-        });
-      }
-    })
+  // WebSocket management methods
+  startPriceStreaming(): void {
+    if (!this.isStreaming && this.holdings.length > 0) {
+      console.log('Starting price streaming for holdings...');
+      this.webSocketService.startPriceStreaming();
+    }
   }
+
+  stopPriceStreaming(): void {
+    if (this.isStreaming) {
+      console.log('Stopping price streaming...');
+      this.webSocketService.stopPriceStreaming();
+      this.isStreaming = false;
+    }
+  }
+
+  handlePriceUpdate(update: PriceUpdate): void {
+    console.log('Processing price update:', update);
+    
+    // Find the holding that matches this symbol
+    const holdingIndex = this.holdings.findIndex(h => h.symbol === update.symbol);
+    
+    if (holdingIndex !== -1) {
+      // Update the holding with new price data
+      const holding = this.holdings[holdingIndex];
+      const oldPrice = holding.current_price;
+      
+      // Update price fields
+      holding.current_price = update.price_data.current_price;
+      holding.day_change = update.price_data.day_change;
+      holding.day_change_percent = update.price_data.day_change_percent;
+      
+      // Recalculate market value
+      holding.market_value = holding.quantity * holding.current_price;
+      
+      // Recalculate gain/loss
+      holding.gain_loss = holding.market_value - holding.total_cost;
+      
+      // Update the holdings array to trigger change detection
+      this.holdings = [...this.holdings];
+      
+      // If the tooltip is showing this holding, update it too
+      if (this.tooltipHolding && this.tooltipHolding.symbol === update.symbol) {
+        this.tooltipHolding = { ...holding };
+      }
+      
+      console.log(`Updated ${update.symbol}: $${oldPrice} → $${holding.current_price} (${holding.day_change_percent.toFixed(2)}%)`);
+    }
+  }
+
+
+
+  // Toggle streaming method for UI
+  toggleStreaming(): void {
+    if (this.isStreaming) {
+      this.stopPriceStreaming();
+    } else {
+      this.startPriceStreaming();
+    }
+  }
+
+
+
+
 }

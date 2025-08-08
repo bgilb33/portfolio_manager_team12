@@ -160,6 +160,9 @@ export interface WatchlistData{
   open: number;
   previousClose: number;
   current_price: number;
+  day_change?: number;
+  day_change_percent?: number;
+  last_updated?: string;
   recommendations: Recommendation[];
   symbol: string;
 }

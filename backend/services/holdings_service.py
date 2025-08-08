@@ -38,9 +38,27 @@ def get_user_holdings(user_id: str):
                     'sector': None
                 })
             else:
-                # Get current price from CACHED market_prices table (no yfinance call)
+                # Use cached data (should be fresh from dashboard refresh)
                 price_data = get_cached_price(symbol)
-                current_price = Decimal(str(price_data.get('current_price', 0))) if price_data else Decimal('0')
+                
+                # If no cached data, fetch fresh as fallback
+                if not price_data:
+                    logger.info(f"No cached data for {symbol}, fetching fresh")
+                    try:
+                        from services.market_service import fetch_current_price, cache_price
+                        fresh_data = fetch_current_price(symbol)
+                        if fresh_data:
+                            cache_price(symbol, fresh_data)
+                            price_data = fresh_data
+                    except Exception as e:
+                        logger.warning(f"Failed to fetch fresh data for {symbol}: {e}")
+                        price_data = {}
+                
+                current_price_val = price_data.get('current_price', 0) if price_data else 0
+                day_change = price_data.get('day_change', 0) if price_data else 0
+                day_change_percent = price_data.get('day_change_percent', 0) if price_data else 0
+                
+                current_price = Decimal(str(current_price_val)) if current_price_val else Decimal('0')
                 
                 # Get company name and sector from assets table
                 asset_data = get_asset_info(symbol)
@@ -63,8 +81,8 @@ def get_user_holdings(user_id: str):
                     'total_cost': float(total_cost),  # USER'S actual investment
                     'gain_loss': float(gain_loss),
                     'gain_loss_percent': float(gain_loss_percent),
-                    'day_change': float(price_data.get('day_change', 0)) if price_data else 0.0,
-                    'day_change_percent': float(price_data.get('day_change_percent', 0)) if price_data else 0.0,
+                    'day_change': float(day_change),  # Always calculated
+                    'day_change_percent': float(day_change_percent),  # Always calculated
                     'realized_gain_loss': float(realized_gain_loss_total),
                     'sector': sector
                 })

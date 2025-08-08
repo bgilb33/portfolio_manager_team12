@@ -36,9 +36,17 @@ export class PortfolioComponent {
       if (ready) {
         forkJoin([
           this.portfolioService.getPortfolio(),
-          this.portfolioService.getTimeSeriesData()
-        ]).subscribe(() => {
-          this.isLoading = false;
+          this.portfolioService.getTimeSeriesData(),
+          this.portfolioService.refreshHoldings()  // Pre-refresh prices for instant holdings
+        ]).subscribe({
+          next: () => {
+            this.isLoading = false;
+            console.log('Dashboard loaded with fresh price data');
+          },
+          error: (error) => {
+            console.error('Error loading dashboard:', error);
+            this.isLoading = false;  // Still show dashboard even if refresh fails
+          }
         });
       }
     });

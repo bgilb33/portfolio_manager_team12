@@ -1,12 +1,14 @@
 <div class="p-2 rounded shadow h-[300px]">
-    <div class="flex overflow-y-auto">
-        <h3 class="text-sm font-semibold mb-2 text-blue-900">Watchlist</h3>
+    <div class="flex items-center gap-2 mb-2">
+        <h3 class="text-sm font-semibold text-blue-900">Watchlist</h3>
+        
+        <!-- Edit Button -->
         <button
-        (click)="openEdit()"
-        class="bg-blue-900 text-white rounded text-xs px-2 mb-2 ml-2 py-1 rounded "
-      >
-        Edit
-      </button>
+            (click)="openEdit()"
+            class="bg-blue-900 text-white rounded text-xs px-2 py-1"
+        >
+            Edit
+        </button>
     </div>
   
   
@@ -30,7 +32,20 @@
                     <span class="text-xs text-gray-500">{{ stock.name }}</span>
                 </div>
             </td>
-            <td class="px-4 py-2">${{ stock.current_price | number: '1.2-2'}}</td>
+            <td class="px-4 py-2">
+                <div class="flex flex-col">
+                    <div>
+                        ${{ stock.current_price | number: '1.2-2'}}
+                    </div>
+                    <!-- Day change information -->
+                    <div *ngIf="stock.day_change !== undefined && stock.day_change_percent !== undefined" 
+                         class="text-xs" 
+                         [ngClass]="(stock.day_change || 0) >= 0 ? 'text-emerald-500' : 'text-red-600'">
+                        {{ (stock.day_change || 0) >= 0 ? '+' : '' }}{{ (stock.day_change || 0) | number: '1.2-2' }}
+                        ({{ (stock.day_change_percent || 0) | number: '1.1-1' }}%)
+                    </div>
+                </div>
+            </td>
             <td class="px-4 py-2">${{ stock.high | number: '1.2-2'}}</td>
             <td class="px-4 py-2">${{ stock.low | number: '1.2-2'}}</td>
             <td class="px-4 py-2">${{ stock.open | number: '1.2-2'}}</td>
