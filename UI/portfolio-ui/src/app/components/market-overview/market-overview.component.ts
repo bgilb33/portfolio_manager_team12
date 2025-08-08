@@ -25,7 +25,7 @@ export class MarketOverviewComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.portfolioService.marketView$.subscribe(data => {
+    const marketViewSub = this.portfolioService.marketView$.subscribe(data => {
       if (data) {
         this.indices = data;
         
@@ -35,6 +35,36 @@ export class MarketOverviewComponent implements OnInit, OnDestroy {
         }
       }
     });
+    this.subscriptions.push(marketViewSub);
+
+    // Also listen for portfolio changes to restart streaming if needed
+    // This ensures market indices keep streaming even after transactions
+    const portfolioSub = this.portfolioService.portfolio$.subscribe(portfolioData => {
+      console.log('Market Overview: Portfolio data changed', {
+        hasPortfolioData: !!portfolioData,
+        indicesLength: this.indices.length,
+        isStreaming: this.isStreamingMarketIndices
+      });
+      
+      if (portfolioData) {
+        // Give a longer delay for market indices since they're loaded separately
+        setTimeout(() => {
+          console.log('Portfolio changed, ensuring market indices streaming is active...', {
+            indicesLength: this.indices.length,
+            isCurrentlyStreaming: this.isStreamingMarketIndices
+          });
+          
+          if (this.indices.length > 0) {
+            this.startMarketIndicesStreaming();
+          } else {
+            // If indices aren't loaded yet, force load them and then start streaming
+            console.log('Indices not loaded yet, forcing refresh...');
+            this.portfolioService.getMajorIndices();
+          }
+        }, 1500); // Longer delay since market indices load independently
+      }
+    });
+    this.subscriptions.push(portfolioSub);
 
     this.portfolioService.getMajorIndices();  // Initiates async price fetch
     this.setupWebSocketSubscriptions();
@@ -92,10 +122,18 @@ export class MarketOverviewComponent implements OnInit, OnDestroy {
   }
 
   startMarketIndicesStreaming(): void {
-    if (!this.isStreamingMarketIndices) {
-      console.log('Starting market indices streaming...');
+    console.log('Attempting to start market indices streaming...', {
+      isCurrentlyStreaming: this.isStreamingMarketIndices,
+      indicesCount: this.indices.length
+    });
+    
+    // Always restart streaming to ensure it's active, regardless of current status
+    console.log('Restarting market indices streaming to ensure connection...');
+    this.webSocketService.stopMarketIndicesStreaming();
+    setTimeout(() => {
+      console.log('Starting fresh market indices streaming...');
       this.webSocketService.startMarketIndicesStreaming();
-    }
+    }, 200); // Slightly longer delay for market indices
   }
 
   stopMarketIndicesStreaming(): void {

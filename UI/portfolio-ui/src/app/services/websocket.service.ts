@@ -312,10 +312,11 @@ export class WebSocketService {
     if (!this.isConnected()) {
       this.connect();
       
-      this.connected$.subscribe(connected => {
+      const connectionSub = this.connected$.subscribe(connected => {
         if (connected) {
           setTimeout(() => {
             this.subscribeToMarketIndices();
+            connectionSub.unsubscribe(); // Clean up this one-time subscription
           }, 500);
         }
       });

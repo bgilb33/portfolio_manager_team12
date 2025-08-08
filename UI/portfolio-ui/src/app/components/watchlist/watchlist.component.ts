@@ -39,6 +39,29 @@ export class WatchlistComponent implements OnInit, OnDestroy {
   ngOnInit(): void{
     this.loadWatchlist();
     this.setupWebSocketSubscriptions();
+    
+    // Listen for portfolio changes to ensure watchlist streaming persists
+    // This ensures watchlist keeps streaming even after transactions
+    const portfolioSub = this.portfolioService.portfolio$.subscribe(portfolioData => {
+      console.log('Watchlist: Portfolio data changed', {
+        hasPortfolioData: !!portfolioData,
+        watchlistLength: this.watchlist.length,
+        isStreaming: this.isStreamingWatchlist
+      });
+      
+      if (portfolioData) {
+        // Delay slightly to ensure watchlist is loaded
+        setTimeout(() => {
+          if (this.watchlist.length > 0) {
+            console.log('Portfolio changed, ensuring watchlist streaming is active...');
+            this.startWatchlistStreaming();
+          } else {
+            console.log('Portfolio changed but watchlist is empty, skipping streaming restart');
+          }
+        }, 1000); // Increased delay to ensure watchlist is loaded
+      }
+    });
+    this.subscriptions.push(portfolioSub);
   }
 
   ngOnDestroy(): void {
@@ -253,10 +276,26 @@ export class WatchlistComponent implements OnInit, OnDestroy {
   }
 
   startWatchlistStreaming(): void {
-    if (!this.isStreamingWatchlist && this.watchlist.length > 0) {
+    console.log('Attempting to start watchlist streaming...', {
+      isCurrentlyStreaming: this.isStreamingWatchlist,
+      watchlistLength: this.watchlist.length,
+      symbols: this.watchlist.map(item => item.symbol)
+    });
+    
+    if (this.watchlist.length > 0) {
       const symbols = this.watchlist.map(item => item.symbol);
-      console.log('Starting watchlist streaming for symbols:', symbols);
-      this.webSocketService.startWatchlistStreaming(symbols);
+      
+      if (!this.isStreamingWatchlist) {
+        console.log('Starting watchlist streaming for symbols:', symbols);
+        this.webSocketService.startWatchlistStreaming(symbols);
+      } else {
+        console.log('Watchlist streaming already active, ensuring connection...');
+        // Even if we think we're streaming, restart it to be safe
+        this.webSocketService.stopWatchlistStreaming();
+        setTimeout(() => {
+          this.webSocketService.startWatchlistStreaming(symbols);
+        }, 100);
+      }
     }
   }
 
